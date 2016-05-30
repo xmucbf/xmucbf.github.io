@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="elk,日志," />
 
 
 
@@ -86,15 +86,22 @@
 
 
 
-<meta name="description" content="Java | Scala | Spark | Hadoop">
-<meta property="og:type" content="website">
-<meta property="og:title" content="码农的耕地">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="前言我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELK构建日志搜索服务">
+<meta property="og:url" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="Java | Scala | Spark | Hadoop">
+<meta property="og:description" content="前言我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志">
+<meta property="og:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/1.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/1.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/3.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/4.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/5.png">
+<meta property="og:updated_time" content="2016-05-30T16:02:12.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="码农的耕地">
-<meta name="twitter:description" content="Java | Scala | Spark | Hadoop">
+<meta name="twitter:title" content="ELK构建日志搜索服务">
+<meta name="twitter:description" content="前言我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志">
+<meta name="twitter:image" content="http://yoursite.com/2016/05/30/ELK构建日志搜索服/1.png">
 
 
 
@@ -112,7 +119,7 @@
   };
 </script>
 
-  <title> 码农的耕地 </title>
+  <title> ELK构建日志搜索服务 | 码农的耕地 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +140,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +217,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,119 +239,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/05/31/hello-world/" itemprop="url">
-                  Hello World
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T00:02:59+08:00" content="2016-05-31">
-              2016-05-31
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/31/hello-world/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/05/31/hello-world/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/30/ELK构建日志搜索服/" itemprop="url">
-                  ELK构建日志搜索服务
-                </a>
+                ELK构建日志搜索服务
               
             
           </h1>
@@ -393,9 +286,7 @@
       
 
       
-        
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志数据对每个用户来说触手可及、随时可用并展示价值。这正是日志搜索服务所专注的地方。</p>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志数据对每个用户来说触手可及、随时可用并展示价值。这正是日志搜索服务所专注的地方。</p>
 <h2 id="日志搜索服务的应用场景"><a href="#日志搜索服务的应用场景" class="headerlink" title="日志搜索服务的应用场景"></a>日志搜索服务的应用场景</h2><p>日志搜索服务能够分布式的采集用户日志信息，集中到一个地方统一处理。经过智能化的解析日志格式，挖掘日志中隐藏的数据特性。再通过准实时的分词和索引，提供给用户近实时的结果分析查看，及自由的关键字查询和多样化的统计、分析功能。用户使用日志搜索服务将能方便的对自己的业务进行监控、统计分析、及安全与合规审计。<br>几种常见的日志搜索应用场景如下：<br>  服务程序bug分析<br>    1.快速定位发现程序日志错误或异常<br>    2.关联分析大规模分布式系统各个模块产生的大量Debug日志<br>  运维可用性监控及应用性能监控<br>    1.通过日志对服务器及应用程序状态实时监控<br>    2.通过日志对应用程序性能实时监控，及时发现性能瓶颈<br>    3.安全信息与事件管理<br>  网站用户及手机用户访问统计<br>    1.社交、视频、电商、游戏网站用户行为及交易行为分析<br>    2.客户端设备、操作系统、浏览器统计</p>
 <h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2> <img src="/2016/05/30/ELK构建日志搜索服/1.png" alt="整体架构图" title="整体架构图">
 <p> 按照日志处理的流程，我们将整个日志搜索服务系统分成4部分。如上图所示，依次为日志搜集部分、日志格式解析部分、索引/存储部分和可视化/搜索部分。<br> 各个部分遵循先后顺序，依次对日志数据数据流进行处理。并且每个部分都被完整的赋予了实现某个特定的功能。<br> 下面是对各个部分详细的介绍。</p>
@@ -423,36 +314,58 @@
 </ul>
 <h2 id="其他功能"><a href="#其他功能" class="headerlink" title="其他功能"></a>其他功能</h2><p>对于日志搜索服务系统的管理，还需提供管理服务器模块，用于管理日志搜索系统的创建、删除、修改、扩容等操作，用户可以方便的接入日志搜索服务系统，并无需关心系统的运维工作。<br>此外也要提供完善的报警监控功能，诸如进程、节点、服务状态、系统负载等多维度的监控，保障服务的稳定运行。用户将能够享受到最便捷的日志搜索服务。</p>
 
-          
+      
+    </div>
+
+    <div>
+      
         
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
+        <div class="post-tags">
+          
+            <a href="/tags/elk-日志/" rel="tag">#elk,日志</a>
+          
+        </div>
       
 
       
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/31/hello-world/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
       
-        <div class="post-eof"></div>
+
+      
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -460,6 +373,17 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -479,8 +403,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -530,6 +463,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志搜索服务的应用场景"><span class="nav-number">2.</span> <span class="nav-text">日志搜索服务的应用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整体架构"><span class="nav-number">3.</span> <span class="nav-text">整体架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志搜集"><span class="nav-number">4.</span> <span class="nav-text">日志搜集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ETL解析"><span class="nav-number">5.</span> <span class="nav-text">ETL解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引-存储"><span class="nav-number">6.</span> <span class="nav-text">索引/存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可视化-搜索"><span class="nav-number">7.</span> <span class="nav-text">可视化/搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他功能"><span class="nav-number">8.</span> <span class="nav-text">其他功能</span></a></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -626,6 +570,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
@@ -642,9 +590,9 @@
 
     <script type="text/javascript">
       var disqus_shortname = 'devilwwj';
-      var disqus_identifier = 'index.html';
-      var disqus_title = "";
-      var disqus_url = '';
+      var disqus_identifier = '2016/05/30/ELK构建日志搜索服/';
+      var disqus_title = "ELK构建日志搜索服务";
+      var disqus_url = 'http://yoursite.com/2016/05/30/ELK构建日志搜索服/';
 
       function run_disqus_script(disqus_script){
         var dsq = document.createElement('script');
@@ -655,6 +603,8 @@
       }
 
       run_disqus_script('count.js');
+      
+        run_disqus_script('embed.js');
       
     </script>
   
