@@ -18,7 +18,7 @@
     <title><![CDATA[Hello World]]></title>
     <link href="http://yoursite.com/2016/05/31/hello-world/"/>
     <id>http://yoursite.com/2016/05/31/hello-world/</id>
-    <published>2016-05-30T16:02:59.776Z</published>
+    <published>2016-05-30T16:05:19.550Z</published>
     <updated>2016-05-30T07:20:54.000Z</updated>
     <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
@@ -41,12 +41,12 @@
     <link href="http://yoursite.com/2016/05/30/ELK%E6%9E%84%E5%BB%BA%E6%97%A5%E5%BF%97%E6%90%9C%E7%B4%A2%E6%9C%8D/"/>
     <id>http://yoursite.com/2016/05/30/ELK构建日志搜索服/</id>
     <published>2016-05-30T09:59:02.000Z</published>
-    <updated>2016-05-30T16:02:12.000Z</updated>
+    <updated>2016-05-30T16:05:05.000Z</updated>
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志数据对每个用户来说触手可及、随时可用并展示价值。这正是日志搜索服务所专注的地方。</p>
 <h2 id="日志搜索服务的应用场景"><a href="#日志搜索服务的应用场景" class="headerlink" title="日志搜索服务的应用场景"></a>日志搜索服务的应用场景</h2><p>日志搜索服务能够分布式的采集用户日志信息，集中到一个地方统一处理。经过智能化的解析日志格式，挖掘日志中隐藏的数据特性。再通过准实时的分词和索引，提供给用户近实时的结果分析查看，及自由的关键字查询和多样化的统计、分析功能。用户使用日志搜索服务将能方便的对自己的业务进行监控、统计分析、及安全与合规审计。<br>几种常见的日志搜索应用场景如下：<br>  服务程序bug分析<br>    1.快速定位发现程序日志错误或异常<br>    2.关联分析大规模分布式系统各个模块产生的大量Debug日志<br>  运维可用性监控及应用性能监控<br>    1.通过日志对服务器及应用程序状态实时监控<br>    2.通过日志对应用程序性能实时监控，及时发现性能瓶颈<br>    3.安全信息与事件管理<br>  网站用户及手机用户访问统计<br>    1.社交、视频、电商、游戏网站用户行为及交易行为分析<br>    2.客户端设备、操作系统、浏览器统计</p>
 <h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2> <img src="/2016/05/30/ELK构建日志搜索服/1.png" alt="整体架构图" title="整体架构图">
 <p> 按照日志处理的流程，我们将整个日志搜索服务系统分成4部分。如上图所示，依次为日志搜集部分、日志格式解析部分、索引/存储部分和可视化/搜索部分。<br> 各个部分遵循先后顺序，依次对日志数据数据流进行处理。并且每个部分都被完整的赋予了实现某个特定的功能。<br> 下面是对各个部分详细的介绍。</p>
-<h2 id="日志搜集"><a href="#日志搜集" class="headerlink" title="日志搜集"></a>日志搜集</h2><p>日志收集模块负责从用户的服务器节点上收集原始日志数据，并统一转发至RabbitMQ/Kafka队列，以便后续模块处理。日志的收集任务由杭研自主研发的Datastream服务负责完成。Datastream Agent支持监控整个目录及Rotated文件的功能，并支持全量与增量拉取文件数据。而且其自身提供了将数据转发至RabbitMQ/Kafka的选项。<br><img src="/2016/05/30/ELK构建日志搜索服/1.png" alt="日志搜集图" title="日志搜集图"><br>RabbitMQ/Kafka队列用于集中化和缓存Datasteam Agent搜集到的数据，以便后续处理程序从中拉取。</p>
+<h2 id="日志搜集"><a href="#日志搜集" class="headerlink" title="日志搜集"></a>日志搜集</h2><p>日志收集模块负责从用户的服务器节点上收集原始日志数据，并统一转发至RabbitMQ/Kafka队列，以便后续模块处理。日志的收集任务由杭研自主研发的Datastream服务负责完成。Datastream Agent支持监控整个目录及Rotated文件的功能，并支持全量与增量拉取文件数据。而且其自身提供了将数据转发至RabbitMQ/Kafka的选项。<br><img src="/2016/05/30/ELK构建日志搜索服/2.png" alt="日志搜集图" title="日志搜集图"><br>RabbitMQ/Kafka队列用于集中化和缓存Datasteam Agent搜集到的数据，以便后续处理程序从中拉取。</p>
 <h2 id="ETL解析"><a href="#ETL解析" class="headerlink" title="ETL解析"></a>ETL解析</h2><p>格式解析用于将半结构化的日志数据解析为格式化的日志信息。格式解析是日志数据可用于后续高级分析、统计的基础，解析后的日志各个字段也是后续统计、分析功能的基本维度。<br>举个例子，一条最常见的Nginx访问日志：<br>61.135.255.84 - - [21/Apr/2015:14:05:00 +0800] “GET /sd/service/query?index=ndirServiceZixunTopic&amp;stype=1&amp;offset=0&amp;length=15&amp;q=%E5%BD%A9%E7%A5%A8 HTTP/1.1” 200 237 0.010 “10.120.150.115:7982” 0.010<br>通常可以解析成：<br><img src="/2016/05/30/ELK构建日志搜索服/3.png" alt="日志搜集图" title="日志搜集图"><br>此时，用户即可以根据解析结果进行更有目的的搜索（或统计），诸如：统计status非200的请求条数，或响应时间超过500ms的请求数等等。<br>对于无法准确解析出字段信息的日志，我们按整体数据作为一个默认字段来进行索引（仍然可以进行搜索，但无法完成更高级的统计分析操作）。<br>日志格式的解析功能采用Logstash开源组件实现。目前，通用的日志解析方法主要依赖于正则表达式来实现。</p>
 <h2 id="索引-存储"><a href="#索引-存储" class="headerlink" title="索引/存储"></a>索引/存储</h2><p>索引和存储模块最主要的功能是将解析后的日志数据建成索引，并提供近实时的搜索服务。日志数据在被建成索引后用户即可以按关键字进行搜索，或进行统计、分析。<br>索引/存储模块由开源的搜索系统Elasticsearch实现。Elasticsearch基于成熟的信息检索框架Lucene，具有近实时搜索、高度支持分布式、索引格式自由、支持多索引等优点，并针对日志搜索、日志统计分析的场景进行了特殊的优化，非常适合用于日志检索服务。<br>但要实现高性能、服务可靠的搜索服务系统，也需要针对特定的场景对Elasticsearch进行适当的优化。</p>
 <ul>
