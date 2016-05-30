@@ -1,48 +1,308 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title><![CDATA[码农的耕地]]></title>
-  <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
-  <link href="/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2016-05-30T07:20:54.000Z</updated>
-  <id>http://yoursite.com/</id>
+<!doctype html>
+
+
+
   
-  <author>
-    <name><![CDATA[cbf]]></name>
-    <email><![CDATA[xmucbf@gmail.com]]></email>
-  </author>
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
   
-  <generator uri="http://hexo.io/">Hexo</generator>
   
-  <entry>
-    <title><![CDATA[Hello World]]></title>
-    <link href="http://yoursite.com/2016/05/31/hello-world/"/>
-    <id>http://yoursite.com/2016/05/31/hello-world/</id>
-    <published>2016-05-30T17:37:46.735Z</published>
-    <updated>2016-05-30T07:20:54.000Z</updated>
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.]]>
-    </summary>
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
     
-  </entry>
+    
   
-  <entry>
-    <title><![CDATA[性能定位整体思路]]></title>
-    <link href="http://yoursite.com/2016/05/31/%E6%80%A7%E8%83%BD%E5%AE%9A%E4%BD%8D%E6%95%B4%E4%BD%93%E6%80%9D%E8%B7%AF/"/>
-    <id>http://yoursite.com/2016/05/31/性能定位整体思路/</id>
-    <published>2016-05-30T16:13:08.000Z</published>
-    <updated>2016-05-30T17:37:29.000Z</updated>
-    <content type="html"><![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="架构，性能测试," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="码农的耕地" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
+一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="性能定位整体思路">
+<meta property="og:url" content="http://yoursite.com/2016/05/31/性能定位整体思路/index.html">
+<meta property="og:site_name" content="码农的耕地">
+<meta property="og:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
+一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/1.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/2.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/3.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/4.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/5.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/6.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/7.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/8.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/9.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/10.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/11.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/12.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/13.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/14.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/15.png">
+<meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/16.png">
+<meta property="og:updated_time" content="2016-05-30T17:37:29.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="性能定位整体思路">
+<meta name="twitter:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
+一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta name="twitter:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 性能定位整体思路 | 码农的耕地 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">码农的耕地</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">夕阳下，烟柳树，coding</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                性能定位整体思路
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-31T00:13:08+08:00" content="2016-05-31">
+              2016-05-31
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/31/性能定位整体思路/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/05/31/性能定位整体思路/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
 <h2 id="一、服务器定位"><a href="#一、服务器定位" class="headerlink" title="一、服务器定位"></a>一、服务器定位</h2><p>对于一般的应用，最常用的架构是：<br>客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。<br><img src="/2016/05/31/性能定位整体思路/1.png" alt="整体架构图" title="整体架构图"><br>下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TPS和响应时间。如果TPS过低或者响应时间过长，可以查看一下客户端是否有错误日志产生，从错误日志中定位问题，若没有错误日志可以从堆栈信息中定位问题，详见下文的1.1.3节；如果TPS和响应时间都正常就可以查看一下客户端的资源利用率的使用情况，详见下文的1.2节。<br><img src="/2016/05/31/性能定位整体思路/2.png" alt="整体流程图" title="整体流程图"></p>
 <h3 id="1-1-接口测试"><a href="#1-1-接口测试" class="headerlink" title="1.1 接口测试"></a>1.1 接口测试</h3><h4 id="1-1-1-接口的TPS和响应时间"><a href="#1-1-1-接口的TPS和响应时间" class="headerlink" title="1.1.1 接口的TPS和响应时间"></a>1.1.1 接口的TPS和响应时间</h4><p>在一般的接口测试，可以使用loadrunner或者在可以在测试机上安装grinder客户端，然后运行脚本，在log中可以看到本次执行的接口响应时间和TPS，如下图所示；<br><img src="/2016/05/31/性能定位整体思路/3.png" alt="TPS图" title="TPS图"></p>
 <h4 id="1-1-2-查看错误日志"><a href="#1-1-2-查看错误日志" class="headerlink" title="1.1.2 查看错误日志"></a>1.1.2 查看错误日志</h4><p>查看是否有error日志，从error中获取信息，例如下图从测试客户端的error日志中查看到的错误信息：<br><img src="/2016/05/31/性能定位整体思路/4.png" alt="errorlog图" title="errorlog图"><br>错误日志中会有错误说明和错误的提示信息，可以从中获取到定位问题的方法，例如图示中的错误提示为：“A JSONObject text must begin with ‘{‘ at character 1”表示JSON对象的格式不对，可以参考代码做相应的修改。</p>
@@ -195,56 +455,316 @@
 <li>Nginx写入到应用服务器写超时，常见是应用服务器繁忙且分布不出新的工作线程，backlog满了无法新建新连接，后续握手包被应用服务器内核丢弃</li>
 <li>Nginx读取应用服务器读取超时，一般是应用服务器的响应时间超过Nginx设置的超时</li>
 </ol>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
-<h2 id="一、服务器定位"><a href="#一、服务器定位" c]]>
-    </summary>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/架构，性能测试/" rel="tag">#架构，性能测试</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/30/ELK构建日志搜索服/" rel="next" title="ELK构建日志搜索服务">
+                <i class="fa fa-chevron-left"></i> ELK构建日志搜索服务
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/31/hello-world/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
     
-      <category term="架构，性能测试" scheme="http://yoursite.com/tags/%E6%9E%B6%E6%9E%84%EF%BC%8C%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
     
-  </entry>
+  </div>
+
+
+        </div>
+        
+          
   
-  <entry>
-    <title><![CDATA[ELK构建日志搜索服务]]></title>
-    <link href="http://yoursite.com/2016/05/30/ELK%E6%9E%84%E5%BB%BA%E6%97%A5%E5%BF%97%E6%90%9C%E7%B4%A2%E6%9C%8D/"/>
-    <id>http://yoursite.com/2016/05/30/ELK构建日志搜索服/</id>
-    <published>2016-05-30T09:59:02.000Z</published>
-    <updated>2016-05-30T16:05:05.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志数据对每个用户来说触手可及、随时可用并展示价值。这正是日志搜索服务所专注的地方。</p>
-<h2 id="日志搜索服务的应用场景"><a href="#日志搜索服务的应用场景" class="headerlink" title="日志搜索服务的应用场景"></a>日志搜索服务的应用场景</h2><p>日志搜索服务能够分布式的采集用户日志信息，集中到一个地方统一处理。经过智能化的解析日志格式，挖掘日志中隐藏的数据特性。再通过准实时的分词和索引，提供给用户近实时的结果分析查看，及自由的关键字查询和多样化的统计、分析功能。用户使用日志搜索服务将能方便的对自己的业务进行监控、统计分析、及安全与合规审计。<br>几种常见的日志搜索应用场景如下：<br>  服务程序bug分析<br>    1.快速定位发现程序日志错误或异常<br>    2.关联分析大规模分布式系统各个模块产生的大量Debug日志<br>  运维可用性监控及应用性能监控<br>    1.通过日志对服务器及应用程序状态实时监控<br>    2.通过日志对应用程序性能实时监控，及时发现性能瓶颈<br>    3.安全信息与事件管理<br>  网站用户及手机用户访问统计<br>    1.社交、视频、电商、游戏网站用户行为及交易行为分析<br>    2.客户端设备、操作系统、浏览器统计</p>
-<h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2> <img src="/2016/05/30/ELK构建日志搜索服/1.png" alt="整体架构图" title="整体架构图">
-<p> 按照日志处理的流程，我们将整个日志搜索服务系统分成4部分。如上图所示，依次为日志搜集部分、日志格式解析部分、索引/存储部分和可视化/搜索部分。<br> 各个部分遵循先后顺序，依次对日志数据数据流进行处理。并且每个部分都被完整的赋予了实现某个特定的功能。<br> 下面是对各个部分详细的介绍。</p>
-<h2 id="日志搜集"><a href="#日志搜集" class="headerlink" title="日志搜集"></a>日志搜集</h2><p>日志收集模块负责从用户的服务器节点上收集原始日志数据，并统一转发至RabbitMQ/Kafka队列，以便后续模块处理。日志的收集任务由杭研自主研发的Datastream服务负责完成。Datastream Agent支持监控整个目录及Rotated文件的功能，并支持全量与增量拉取文件数据。而且其自身提供了将数据转发至RabbitMQ/Kafka的选项。<br><img src="/2016/05/30/ELK构建日志搜索服/2.png" alt="日志搜集图" title="日志搜集图"><br>RabbitMQ/Kafka队列用于集中化和缓存Datasteam Agent搜集到的数据，以便后续处理程序从中拉取。</p>
-<h2 id="ETL解析"><a href="#ETL解析" class="headerlink" title="ETL解析"></a>ETL解析</h2><p>格式解析用于将半结构化的日志数据解析为格式化的日志信息。格式解析是日志数据可用于后续高级分析、统计的基础，解析后的日志各个字段也是后续统计、分析功能的基本维度。<br>举个例子，一条最常见的Nginx访问日志：<br>61.135.255.84 - - [21/Apr/2015:14:05:00 +0800] “GET /sd/service/query?index=ndirServiceZixunTopic&amp;stype=1&amp;offset=0&amp;length=15&amp;q=%E5%BD%A9%E7%A5%A8 HTTP/1.1” 200 237 0.010 “10.120.150.115:7982” 0.010<br>通常可以解析成：<br><img src="/2016/05/30/ELK构建日志搜索服/3.png" alt="日志搜集图" title="日志搜集图"><br>此时，用户即可以根据解析结果进行更有目的的搜索（或统计），诸如：统计status非200的请求条数，或响应时间超过500ms的请求数等等。<br>对于无法准确解析出字段信息的日志，我们按整体数据作为一个默认字段来进行索引（仍然可以进行搜索，但无法完成更高级的统计分析操作）。<br>日志格式的解析功能采用Logstash开源组件实现。目前，通用的日志解析方法主要依赖于正则表达式来实现。</p>
-<h2 id="索引-存储"><a href="#索引-存储" class="headerlink" title="索引/存储"></a>索引/存储</h2><p>索引和存储模块最主要的功能是将解析后的日志数据建成索引，并提供近实时的搜索服务。日志数据在被建成索引后用户即可以按关键字进行搜索，或进行统计、分析。<br>索引/存储模块由开源的搜索系统Elasticsearch实现。Elasticsearch基于成熟的信息检索框架Lucene，具有近实时搜索、高度支持分布式、索引格式自由、支持多索引等优点，并针对日志搜索、日志统计分析的场景进行了特殊的优化，非常适合用于日志检索服务。<br>但要实现高性能、服务可靠的搜索服务系统，也需要针对特定的场景对Elasticsearch进行适当的优化。</p>
-<ul>
-<li>集群的构建<br>索引/存储集群的部署最好采用设置客户端节点、数据节点、Master节点的方式，实现功能管理和数据管理分离。<br>客户端节点主要用于与集群外部模块进行交互。接收前端的搜索请求和索引请求，并将请求均衡分发至数据处理节点。客户端节点还可以承担批量数据拆分和搜索结果合并等任务，使后端数据节点专注于搜索、索引等数据处理，减轻数据节点压力。多个客户端节点之前可架设Nginx代理服务器进行轮询均衡。<br>数据节点负责数据的存储、索引和搜索。是集群中规模最大的部分，集群的扩容、缩容服务主要在数据节点上进行。集群的数据节点将会屏蔽HTTP服务，无法接收到外部用户的请求，以保持对数据处理的专注。<br>Master节点负责用于整个集群事务的管理，包括集群的状态监控、接受新节点的加入/离开，集群节点间的数据均衡等。</li>
-<li>预防脑裂现象<br>通常，一个集群至少需要设置3个Master节点，用于Master节点的高可用及Leader选举。集群需要设置一个最小Master节点数，通常为Master节点数/2+1。当Master总数小于此值时，集群不能推举选出Leader节点，用于防止集群脑裂（Split Brain）发生，即部分节点网络丢失后重新集结成新的集群。</li>
-<li>单播/多播<br>集群节点间的发现可以采用单播（Unicast）也可以采用多播（Multicast），多播通常更方便，但在生产环境应用时，当集群节点数增加，多播可能会产生较大的网络负担，并且多播较易和其他产品节点互串，因此应当禁止多播模式，采用单播节点发现。设置单播配置需要配置所有Master节点地址，其他节点信息可自动从Master节点处获取。</li>
-<li>自动恢复设置<br>集群的自动数据恢复需要设置一个最低节点数N，即只有当集群中存在N个以上节点时才能进行数据恢复。并可以再额外设置期望节点数和恢复等待时间，也即最好是达到期望的节点数（通常是整个集群节点）了或已经达到最低节点数并已经等待恢复等待时间后再进行恢复。以避免集群中当一个节点进行重启或集群进行整体重启/更新等操作时，Master误以为节点离线而迅速进行节点数据恢复（产生大量的节点间数据误拷贝操作）。</li>
-<li>高可用/高可靠<br>集群的高可用/高可靠由节点副本功能提供。</li>
-<li>其他 还有集群的安全性设置和针对日志搜索的场景通常写请求量大而读请求量小可进行针对性的写请求优化等。</li>
-</ul>
-<p>整个索引/存储的集群构成类似于下图：<br><img src="/2016/05/30/ELK构建日志搜索服/4.png" alt="索引存储集群图" title="索引存储集群图"></p>
-<h2 id="可视化-搜索"><a href="#可视化-搜索" class="headerlink" title="可视化/搜索"></a>可视化/搜索</h2><p>可视化/搜索部分作为用户的入口，提供搜索并直观的展示用户搜索结果功能，并且用户可以对搜索结果进行统计分析和报表等展示。对于用户来说，通常可能并不需要了解整个系统底层的实现，而只需要熟悉可视化/搜索部分功能模块，方便的使用相关功能满足自己的业务需求。<br>日志搜索系统的可视化/搜索功能采用开源Kibana组件实现。Kibana目前提供可视化报表种类有：</p>
-<ul>
-<li>历史趋势图</li>
-<li>表格</li>
-<li>地图</li>
-<li>terms统计</li>
-<li>query统计</li>
-<li>hits统计<br>等。并且支持对结果以时间折线图、条形图、饼状图等图形进行展示。<br>可视化效果示例：<img src="/2016/05/30/ELK构建日志搜索服/5.png" alt="可视化搜索图" title="可视化搜索图">
-</li>
-</ul>
-<h2 id="其他功能"><a href="#其他功能" class="headerlink" title="其他功能"></a>其他功能</h2><p>对于日志搜索服务系统的管理，还需提供管理服务器模块，用于管理日志搜索系统的创建、删除、修改、扩容等操作，用户可以方便的接入日志搜索服务系统，并无需关心系统的运维工作。<br>此外也要提供完善的报警监控功能，诸如进程、节点、服务状态、系统负载等多维度的监控，保障服务的稳定运行。用户将能够享受到最便捷的日志搜索服务。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容]]>
-    </summary>
-    
-      <category term="elk,日志" scheme="http://yoursite.com/tags/elk-%E6%97%A5%E5%BF%97/"/>
-    
-  </entry>
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="cbf" />
+          <p class="site-author-name" itemprop="name">cbf</p>
+          <p class="site-description motion-element" itemprop="description">Java | Scala | Spark | Hadoop</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、服务器定位"><span class="nav-number">1.</span> <span class="nav-text">一、服务器定位</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-接口测试"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 接口测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-1-接口的TPS和响应时间"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1.1 接口的TPS和响应时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-2-查看错误日志"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.1.2 查看错误日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-3-查看堆栈信息"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.1.3 查看堆栈信息</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-机器资源指标"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 机器资源指标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-CPU"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1.1  CPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-2-CPU"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.1.2  CPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-3-内存"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.1.3 内存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-4-磁盘IO"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.1.4 磁盘IO</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Nginx端"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Nginx端</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-1-查看访问日志access-log、error-log"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.3.1 查看访问日志access_.log、error.log</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-Tomcat"><span class="nav-number">1.4.</span> <span class="nav-text">1.4. Tomcat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-1-Tomcat日志"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.4.1 Tomcat日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-2-JVM监控"><span class="nav-number">1.4.2.</span> <span class="nav-text">1.4.2 JVM监控</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、常见服务器错误"><span class="nav-number">2.</span> <span class="nav-text">二、常见服务器错误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-404-错误"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 404 错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Nginx-500-错误"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Nginx 500 错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Nginx-502-错误"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Nginx 502 错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Nginx-504错误"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Nginx 504错误</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
   
-</feed>
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cbf</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+    <script type="text/javascript">
+      var disqus_shortname = 'devilwwj';
+      var disqus_identifier = '2016/05/31/性能定位整体思路/';
+      var disqus_title = "性能定位整体思路";
+      var disqus_url = 'http://yoursite.com/2016/05/31/性能定位整体思路/';
+
+      function run_disqus_script(disqus_script){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      }
+
+      run_disqus_script('count.js');
+      
+        run_disqus_script('embed.js');
+      
+    </script>
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>

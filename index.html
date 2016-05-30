@@ -249,7 +249,7 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T00:05:19+08:00" content="2016-05-31">
+            <time itemprop="dateCreated" datetime="2016-05-31T01:37:46+08:00" content="2016-05-31">
               2016-05-31
             </time>
           </span>
@@ -295,6 +295,259 @@
 <p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/05/31/性能定位整体思路/" itemprop="url">
+                  性能定位整体思路
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-31T00:13:08+08:00" content="2016-05-31">
+              2016-05-31
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/31/性能定位整体思路/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/05/31/性能定位整体思路/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
+<h2 id="一、服务器定位"><a href="#一、服务器定位" class="headerlink" title="一、服务器定位"></a>一、服务器定位</h2><p>对于一般的应用，最常用的架构是：<br>客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。<br><img src="/2016/05/31/性能定位整体思路/1.png" alt="整体架构图" title="整体架构图"><br>下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TPS和响应时间。如果TPS过低或者响应时间过长，可以查看一下客户端是否有错误日志产生，从错误日志中定位问题，若没有错误日志可以从堆栈信息中定位问题，详见下文的1.1.3节；如果TPS和响应时间都正常就可以查看一下客户端的资源利用率的使用情况，详见下文的1.2节。<br><img src="/2016/05/31/性能定位整体思路/2.png" alt="整体流程图" title="整体流程图"></p>
+<h3 id="1-1-接口测试"><a href="#1-1-接口测试" class="headerlink" title="1.1 接口测试"></a>1.1 接口测试</h3><h4 id="1-1-1-接口的TPS和响应时间"><a href="#1-1-1-接口的TPS和响应时间" class="headerlink" title="1.1.1 接口的TPS和响应时间"></a>1.1.1 接口的TPS和响应时间</h4><p>在一般的接口测试，可以使用loadrunner或者在可以在测试机上安装grinder客户端，然后运行脚本，在log中可以看到本次执行的接口响应时间和TPS，如下图所示；<br><img src="/2016/05/31/性能定位整体思路/3.png" alt="TPS图" title="TPS图"></p>
+<h4 id="1-1-2-查看错误日志"><a href="#1-1-2-查看错误日志" class="headerlink" title="1.1.2 查看错误日志"></a>1.1.2 查看错误日志</h4><p>查看是否有error日志，从error中获取信息，例如下图从测试客户端的error日志中查看到的错误信息：<br><img src="/2016/05/31/性能定位整体思路/4.png" alt="errorlog图" title="errorlog图"><br>错误日志中会有错误说明和错误的提示信息，可以从中获取到定位问题的方法，例如图示中的错误提示为：“A JSONObject text must begin with ‘{‘ at character 1”表示JSON对象的格式不对，可以参考代码做相应的修改。</p>
+<h4 id="1-1-3-查看堆栈信息"><a href="#1-1-3-查看堆栈信息" class="headerlink" title="1.1.3 查看堆栈信息"></a>1.1.3 查看堆栈信息</h4><p>在运行的机器中，先用top命令获取进程的PID，然后用命令jstack + PID即可获取该进程号对应的java堆栈信息；获取到的堆栈信息需要先关注其线程状态state：</p>
+<ul>
+<li>死锁，Deadlock（重点关注）</li>
+<li>执行中，Runnable</li>
+<li>等待资源，Waiting on condition（重点关注）</li>
+<li>等待获取监视器，Waiting on monitor entry（重点关注）</li>
+<li>暂停，Suspended</li>
+<li>对象等待中，Object.wait() 或 TIMED_WAITING</li>
+<li>阻塞，Blocked（重点关注）</li>
+<li>停止，Parked</li>
+</ul>
+<p>实例一：Waiting to lock 和 Blocked<br><img src="/2016/05/31/性能定位整体思路/5.png" alt="lock图" title="lock图"></p>
+<ol>
+<li>线程状态是 Blocked，阻塞状态。说明线程等待资源超时！</li>
+<li>“ waiting to lock <0x00000000acf4d0c0>”指，线程在等待给这个 0x00000000acf4d0c0 地址上锁（英文可描述为：trying to obtain  0x00000000acf4d0c0 lock）。</0x00000000acf4d0c0></li>
+<li>在 dump 日志里查找字符串 0x00000000acf4d0c0，发现有大量线程都在等待给这个地址上锁。如果能在日志里找到谁获得了这个锁（如locked &lt; 0x00000000acf4d0c0 &gt;），就可以顺藤摸瓜了。</li>
+<li>“waiting for monitor entry”说明此线程通过 synchronized(obj) {……} 申请进入了临界区，从而进入了“Entry Set”队列，但该 obj 对应的 monitor 被其他线程拥有，所以本线程在 Entry Set 队列中等待。</li>
+<li>第一行里，”RMI TCP Connection(267865)-172.16.5.25”是 Thread Name 。tid指Java Thread id。nid指native线程的id。prio是线程优先级。[0x00007fd4f8684000]是线程栈起始地址。</li>
+</ol>
+<p>实例二：Waiting on condition 和 TIMED_WAITING<br><img src="/2016/05/31/性能定位整体思路/6.png" alt="waiting图" title="waiting图"></p>
+<ol>
+<li>“TIMED_WAITING (parking)”中的 timed_waiting 指等待状态，但这里指定了时间，到达指定的时间后自动退出等待状态；parking指线程处于挂起中。</li>
+<li>“waiting on condition”需要与堆栈中的“parking to wait for  <0x00000000acd84de8> (a java.util.concurrent.SynchronousQueue$TransferStack)”结合来看。首先，本线程肯定是在等待某个条件的发生，来把自己唤醒。其次，SynchronousQueue 并不是一个队列，只是线程之间移交信息的机制，当我们把一个元素放入到 SynchronousQueue 中时必须有另一个线程正在等待接受移交的任务，因此这就是本线程在等待的条件。</0x00000000acd84de8></li>
+</ol>
+<p>实例三：in Obejct.wait() 和 TIMED_WAITING<br><img src="/2016/05/31/性能定位整体思路/7.png" alt="objectwaiting图" title="objectwaiting图"></p>
+<ol>
+<li>“TIMED_WAITING (on object monitor)”，对于本例而言，是因为本线程调用了 java.lang.Object.wait(long timeout) 而进入等待状态。</li>
+<li>“Wait Set”中等待的线程状态就是“ in Object.wait() ”。当线程获得了 Monitor，进入了临界区之后，如果发现线程继续运行的条件没有满足，它则调用对象（一般就是被 synchronized 的对象）的 wait() 方法，放弃了 Monitor，进入 “Wait Set”队列。只有当别的线程在该对象上调用了 notify() 或者 notifyAll() ，“ Wait Set”队列中线程才得到机会去竞争，但是只有一个线程获得对象的 Monitor，恢复到运行态。</li>
+<li>RMI RenewClean 是 DGCClient 的一部分。DGC 指的是 Distributed GC，即分布式垃圾回收。</li>
+</ol>
+<h3 id="1-2-机器资源指标"><a href="#1-2-机器资源指标" class="headerlink" title="1.2 机器资源指标"></a>1.2 机器资源指标</h3><p>机器的资源指标可以从机器的CPU、网络、内存、磁盘IO等方面全面系统的监控机器的各个方面。一个有经验的测试人员可以从这些监控命令中获取机器运行的健康情况，从而定位哪里出现了性能瓶颈。Linux下有很多监控命令可以监控到各方面的性能，具体可以参考下图的linux性能监测工具。本文中介绍几种常用的监控工具。<br><img src="/2016/05/31/性能定位整体思路/8.png" alt="linux图" title="linux图"></p>
+<h4 id="2-1-1-CPU"><a href="#2-1-1-CPU" class="headerlink" title="2.1.1  CPU"></a>2.1.1  CPU</h4><p>CPU的指标主要用下面两个命令top，mpstat。<br>top：<br><img src="/2016/05/31/性能定位整体思路/9.png" alt="top图" title="top图"></p>
+<ol>
+<li>红色方框中load表示系统负载（任务队列的平均长度），这三个值分别为1分钟，5分钟，15分钟前到现在的系统负载平均值，一般会小于1，如果持续高于5，要检查是哪个程序影响了系统的运行；一般其数值小于CPU核数，最好不要超过核数的两倍。【  load average数据是每隔5秒钟检查一次活跃的进程数，然后按特定算法计算出的数值，如果这个数除以逻辑CPU的数量的结果高于5，就说明系统在超负荷运转了，可以升级CPU个数】</li>
+<li>Tasks——任务（进程），系统现在共有112个进程，其中处于运行中的有1个，111个在休眠状态，stoped状态的有0个，zombie状态（僵尸）的有0个；</li>
+<li>%Cpu（s)这一行分别代表：<br>us——用户空间占用CPU百分比(user)；<br>sy——内核空间占用CPU百分比(system)；<br>ni——用户空间内改变过优先级的进程占用CPU百分比(user nice)；<br>id——空闲CPU百分比(idle)；<br>wa——等待输入输出CPU时间百分比(io wait)；<br>hi——CPU服务于硬件中断所耗费的时间总额(hardware irq )；<br>si——CPU服务软中断所耗费的时间总额(software irq)；st——StealTime<br>【若用户使用CPU过多，则需要优化用户程序；若系统内核态使用CPU过多，可能是过多的中断以及上下文切换造成的】</li>
+<li>KiB Mem: total——“物理内存总量”、used——“已使用的物理内存”、free——“空闲物理内存”、buffers——“内核缓存内存量”<br>【已使用的物理内存（used）指的是现在系统内核控制的内存数，空闲内存总量（free）是内核还未纳入其管控范围的数量。纳入内核管理的内存不见得都在使用中，还包括过去使用过的现在可以被重复利用的内存，内核并不把这些可被重新使用的内存交还到free中去，因此在linux上free内存会越来越少，但不用为此担心。】</li>
+<li>KiB Swap: total——“交换区总量”、used——“已使用交互区总量”、free——空闲交换区总量”、cached——“缓冲的交换区总量”<br>【Swap中的used的数值如果在不断变化，说明内核在不断进行内存和swap的数据交换，内存有可能不够用】</li>
+<li>PID:进程ID       </li>
+<li>USER: 进程所有者      </li>
+<li>PR: 优先级      </li>
+<li>NI: nice值（负值表示高优先级，正值表示低优先级）      </li>
+<li>VIRT: 进程使用的虚拟内存总量      </li>
+<li>RES:进程使用的，未被换出的物理内存大小       </li>
+<li>SHR:共享内存大小，单位kb       </li>
+<li>S: 进程状态—— D=不可中断的睡眠状态 R=运行 S=睡眠 T=跟踪/停止 Z=僵尸进程     </li>
+<li>%CPU: 上次更新到现在的CPU时间占用百分比      </li>
+<li>%MEM:进程使用的物理内存百分比       </li>
+<li>TIME+:进程使用CPU的总时间       </li>
+<li>COMMAND:  命令行  </li>
+<li>其他技巧：<br>在top的基本视图中，按键盘数字“1”，可监控每个逻辑CPU的状况；<br>top -p + PID 显示指定的PID进程信息；</li>
+</ol>
+<p>mpstat：<br>用 mpstat -P -ALL 1   （MultiProcessor Statistics）查看多核CPU每个计算核心的使用情况，主要看idle这个值，这个值越大说明CPU的空闲越大，使用的CPU越小<br><img src="/2016/05/31/性能定位整体思路/10.png" alt="mpstat图" title="mpstat图"></p>
+<h4 id="2-1-2-CPU"><a href="#2-1-2-CPU" class="headerlink" title="2.1.2  CPU"></a>2.1.2  CPU</h4><p>sar 全称为System Activity Report，是Unix/Linux 下流行的系统资源监控命令，Linux 下如果没有该命令，需要安装 sysstat 包。sar 在网卡上的监控如下图，按照网卡的设置（有些网卡支持每秒采集一次数据、有些可能需要2秒）实时观察网络流量变化，而且通过 -n ETCP 参数可以把重试、错误、重传、RST包都统计出来。如果网络发生抖动，那么从 retrains/txpck 可以观察到重传率，如下图的红色部分。<br><img src="/2016/05/31/性能定位整体思路/11.png" alt="sar图" title="sar图"><br>用 sar -n DEV 1 【sar：System Activity Recorder】主要负责收集、汇报与存储系统运行信息的，sar命令使用-n DEV 选项可以汇报网络设备相关信息，该条命令主要用来查看网卡信息:<br><img src="/2016/05/31/性能定位整体思路/12.png" alt="sardev图" title="sardev图"></p>
+<ol>
+<li>FACE：就是网络设备的名称；</li>
+<li>rxpck/s：每秒钟接收到的包数目</li>
+<li>txpck/s：每秒钟发送出去的包数目</li>
+<li>rxbyt/s：每秒钟接收到的字节数</li>
+<li>txbyt/s：每秒钟发送出去的字节数</li>
+<li>rxcmp/s：每秒钟接收到的压缩包数目</li>
+<li>txcmp/s：每秒钟发送出去的压缩包数目</li>
+<li>rxmcst/s：每秒钟接收到的多播包的包数目</li>
+</ol>
+<p>netstat 命令用于显示各种网络相关信息，如网络连接，路由表，接口状态 (Interface Statistics)，masquerade 连接，多播成员 (Multicast Memberships) 等等。在性能测试中，这个命令主要用来查看现有的端口号等等，从整体上看，netstat的输出结果可以分为两个部分：</p>
+<ul>
+<li>一个是Active Internet connections，称为有源TCP连接，其中”Recv-Q”和”Send-Q”指%0A的是接收队列和发送队列。这些数字一般都应该是0。如果不是则表示软件包正在队列中堆积。这种情况只能在非常少的情况见到。</li>
+<li>另一个是Active UNIX domain sockets，称为有源Unix域套接口(和网络套接字一样，但是只能用于本机通信，性能可以提高一倍)。Proto显示连接使用的协议,RefCnt表示连接到本套接口上的进程号,Types显示套接口的类型,State显示套接口当前的状态,Path表示连接到套接口的其它进程使用的路径名。</li>
+</ul>
+<h4 id="2-1-3-内存"><a href="#2-1-3-内存" class="headerlink" title="2.1.3 内存"></a>2.1.3 内存</h4><p>物理内存和虚拟内存区别：</p>
+<ul>
+<li>物理内存就是系统硬件提供的内存大小，是真正的内存，相对于物理内存，在linux下还有一个虚拟内存的概念，虚拟内存就是为了满足物理内存的不足而提出的策略，它是利用磁盘空间虚拟出的一块逻辑内存，用作虚拟内存的磁盘空间被称为交换空间（Swap Space）。</li>
+<li>作为物理内存的扩展，linux会在物理内存不足时，使用交换分区的虚拟内存，更详细的说，就是内核会将暂时不用的内存块信息写到交换空间，这样以来，物理内存得到了释放，这块内存就可以用于其它目的，当需要用到原始的内容时，这些信息会被重新从交换空间读入物理内存。</li>
+</ul>
+<p>用 vmstat 1 【Virtual Meomory Statistics（虚拟内存统计）】命令查看内存使用情况：<br><img src="/2016/05/31/性能定位整体思路/13.png" alt="vmstat图" title="vmstat图"><br>其中</p>
+<ul>
+<li>Procs（进程）：<br>r: 运行队列中进程数量（runnable）；<br>b: 等待IO的进程数量（blocked）</li>
+<li>Memory（内存）：<br>swpd: 使用虚拟内存大小；<br>free: 可用内存大小；<br>buff: 用作缓冲的内存大小；<br>cache: 用作缓存的内存大小</li>
+<li>Swap：<br>si: 每秒从交换区写到内存的大小；<br>so: 每秒写入交换区的内存大小；<br>【内存够用的时候，这两个值都为0，若这两个值长期大于0时，系统性能会受到影响】<br>IO：（现在的Linux版本块的大小为1024bytes）<br>bi: 每秒读取的块数；<br>bo: 每秒写入的块数;<br>【bi+bo参考值为1000，若超过1000，且wa较大，表示系统IO有问题，应该提高磁盘的读写性能】</li>
+<li>system：<br>in: 每秒中断数，包括时钟中断。<br>cs: 每秒上下文切换数。（content switch）<br>【in与cs越大，内核消耗的CPU时间就越多】<br>CPU（以百分比表示）：<br>us: 用户进程执行时间(user time)；<br>sy: 系统进程执行时间(system time)；<br>id: 空闲时间(包括IO等待时间),中央处理器的空闲时间,以百分比表示；<br>wa: 等待IO时间<br>【us+sy参考值为80%，如果大于80%，说明可能存在CPU资源不足的情况】<br>这个命令中主要看参数： r，b，si，so</li>
+</ul>
+<h4 id="2-1-4-磁盘IO"><a href="#2-1-4-磁盘IO" class="headerlink" title="2.1.4 磁盘IO"></a>2.1.4 磁盘IO</h4><p>用命令 iostat -x 1查看磁盘IO，注意查看%util这个参数<br><img src="/2016/05/31/性能定位整体思路/14.png" alt="iostat图" title="iostat图"></p>
+<ul>
+<li>rrqm/s:每秒进行merge的读操作数目。即delta(rmerge)/s</li>
+<li>wrqm/s:每秒进行merge的写操作数目。即delta(wmerge)/s</li>
+<li>r/s:每秒完成的读I/O设备次数。即delta(rio)/s</li>
+<li>w/s:每秒完成的写I/0设备次数。即delta(wio)/s</li>
+<li>rsec/s:每秒读扇区数。即delta(rsect)/s</li>
+<li>wsec/s:每秒写扇区数。即delta(wsect)/s</li>
+<li>rKB/s:每秒读K字节数。是rsec/s的一半，因为每扇区大小为512字节</li>
+<li>wKB/s:每秒写K字节数。是wsec/s的一半</li>
+<li>avgrq-sz:平均每次设备I/O操作的数据大小(扇区)。即delta(rsect+wsect)/delta(rio+wio)</li>
+<li>avgqu-sz:平均I/O队列长度。即delta(aveq)/s/1000(因为aveq的单位为毫秒)</li>
+<li>await:平均每次设备I/O操作的等待时间(毫秒)。即delta(ruse+wuse)/delta(rio+wio)</li>
+<li>svctm:平均每次设备I/O操作的服务时间(毫秒)。即delta(use)/delta(rio+wio)</li>
+<li>%util:一秒中有百分之多少的时间用于I/O操作,可以衡量磁盘设备的繁忙程度，或者说一秒中有多少时间I/O队列是非空的。即delta(usr)/s/1000(因为use的单位为毫秒)</li>
+</ul>
+<p>如果%util接近100%,说明产生的I/O请求太多,I/O系统已经满负载,该磁盘可能存在瓶颈，同时可以结合vmstat查看查看b参数(等待资源的进程数)和wa参数(I/O等待所占用的CPU时间的百分比,高过30%时I/O压力高)。正常情况下svctm应该小于await，而svctm的大小和磁盘性能有关，CPU、内存的负荷也会对svctm值造成影响，过多的请求也会简介导致svctm值的增加。</p>
+<p>await的大小一般取决与svctm的值和I/O队列长度以及I/O请求模式。如果svctm与await很接近，表示几乎没有I/O等待，磁盘性能很好；如果await的值远高于svctm的值，表示I/O队列等待太长，系统上运行的应用程序将变慢，此时可以通过更换更快的硬盘来解决问题。</p>
+<h3 id="1-3-Nginx端"><a href="#1-3-Nginx端" class="headerlink" title="1.3 Nginx端"></a>1.3 Nginx端</h3><h4 id="1-3-1-查看访问日志access-log、error-log"><a href="#1-3-1-查看访问日志access-log、error-log" class="headerlink" title="1.3.1 查看访问日志access_.log、error.log"></a>1.3.1 查看访问日志access_.log、error.log</h4><p>access.log日志可以在nginx的./conf文件中进行配置，下面是一条详细的access.log日志，通过访问日志和error日志里的有用信息可以粗略定位到哪里出现问题。</p>
+<p>10.165.124.21:37444 - - [29/Jan/2016:09:14:01 +0800] “POST /sdk/mobService/device/bd.do HTTP/1.1” 200 51 “-“ “RPT-HTTPClient/0.3-3E” “-“ 1.735 “mobile.service.reg.163.com” “10.165.136.75:8184” “200” “1.735”</p>
+<p>每行对应的含义可以参考如下：<br><img src="/2016/05/31/性能定位整体思路/15.png" alt="nginxlog图" title="nginxlog图"><br>要注意区分其中的$request_time和$upstream_response_time：</p>
+<ul>
+<li>request_time：指的就是从接受用户请求的第一个字节 到发送完响应数据的时间，即包括接收请求数据时间、 程序响应时间、输出；</li>
+<li>upstream_response_time：指从Nginx向后端建立连接 开始到接受完数据然后关闭连接为止的时间</li>
+<li>总体来说，request_time是包括upstream_response_time时间的，但是如果两者差异太大，可以用netperf工具来查看</li>
+</ul>
+<h3 id="1-4-Tomcat"><a href="#1-4-Tomcat" class="headerlink" title="1.4. Tomcat"></a>1.4. Tomcat</h3><h4 id="1-4-1-Tomcat日志"><a href="#1-4-1-Tomcat日志" class="headerlink" title="1.4.1 Tomcat日志"></a>1.4.1 Tomcat日志</h4><p>Tomcat默认的引擎为Catalina，host为localhost，所以从tomcat中日志可以查看catalina日志，来确定tomcat的启动是否有报错，localhost_access_log访问日志查看每个请求的状态；<br>用netstat命令来查看网络相关的信息。如果出现404这样的错误，可以查看nginx和tomcat之间的TIME_WAIT数量是否很多，如果TIME_WAIT数量较多，需要进一步来定位问题。</p>
+<h4 id="1-4-2-JVM监控"><a href="#1-4-2-JVM监控" class="headerlink" title="1.4.2 JVM监控"></a>1.4.2 JVM监控</h4><p>JVM的监控在性能测试中非常重要，采用工具对JVM监控并分析监控结果可以得到很多定位问题的有用信息，下图是JVM定位问题时经常需要关注的指标和各个指标之间的关系：<br><img src="/2016/05/31/性能定位整体思路/16.png" alt="jmx图" title="jmx图"><br>针对Tomcat这样的后端服务器的JVM监控，可以采用如下设置。在目录/home/appuser/urs/urs-mobile-bj-perf/tomcat-urs-mobile-perf-Ins1/default中配置jvm的参数（根据自己应用的具体目录而定），一般加上如下两行：<br>   -Dcom.sun.management.jmxremote.port=8013 \<br>   -Djava.rmi.server.hostname=10.165.124.14 \</p>
+<p>Jvm中监控的参数主要包括如下几个方面：</p>
+<ol>
+<li>CPU及堆内存监控<br>主要是查看CPU使用率和堆内存的使用情况，CPU使用情况可以用来判断当前测试的接口大体的CPU资源使用情况，堆内存可以看到当前JVM分配的最大可用内存和已用内存趋势。<br>如果CPU使用率过高，TPS比较低，或者响应时间比较长，可以通过查看线程状态，生成线程dump进行分析，也有可能是达到应用服务器的瓶颈。堆内存可以判断垃圾回收是否正常，如果发现堆内存使用急剧上升时，也可以用堆dump把当前堆内存的使用情况保存下来进行查看。如果CPU波动比较明显，GC的开销占比比较高，同时监控到堆使用状态异常，转向内存的监控和定位。</li>
+<li>线程监控<br>线程选项卡主要是查看当前有没有被阻塞的线程，看一下block和wait的线程情况，并用线程堆栈信息辅助查看线程block的具体位置。<br>线程dump可以查看线程的状态，看是在等待、运行、阻塞的状态，并通过下面的堆栈信息来进一步定位造成线程等待或者阻塞的原因。</li>
+<li>热点方法监控<br>对CPU进行抽样，查看自用时间以及自用时间CPU，对于占用CPU较多的，可以进一步使用javosize进行定位。切换到线程CPU时间下面监控线程CPU时间。</li>
+<li>装入的类<br>监控装入的类和卸载的类的变化情况，一般情况下，应用运行一段时间后，装入的类的总数基本保持不变，如果总数一直在增加，需要关注下perm区。</li>
+<li>jvm常用调优命令<br>jps ，主要用来输出JVM中运行的进程状态信息；<br>jstack，java堆栈跟踪工具；<br>jstat，虚拟机统计信息监视工具；<br>jinfo，java配置信息工具；<br>jmap，java内存映像工具；<br>jhat，虚拟机堆转储快照分析工具；<br>VisualVM，可视化的监控工具</li>
+</ol>
+<h2 id="二、常见服务器错误"><a href="#二、常见服务器错误" class="headerlink" title="二、常见服务器错误"></a>二、常见服务器错误</h2><h3 id="2-1-404-错误"><a href="#2-1-404-错误" class="headerlink" title="2.1 404 错误"></a>2.1 404 错误</h3><p>一般是因为nginx和后端的连接出现了问题，没有正常连接起来。通常检查思路可以分为如下：</p>
+<ol>
+<li>nginx配置的upstream的端口号是否有误：查看omad上的端口号，以及在服务器上用netstat 命令查看端口号和对应的PID是否一致；<br>命令： netstata –anp|grep 端口号<br>   lsof –I : 8181  查看8181端口是否被占用</li>
+<li>查看后端应用是否启动起来；<br>命令： ps –ef |grep tomcat； ps –ef |grep resin；等等</li>
+<li>查看nginx端和tomcat端的日志，确定数据库，nkv等是否正常连接；</li>
+<li>tomcat启动成功，但是context启动失败，解决办法就是增加在目录/WEB-INF/classes中增加启动日志查看context的启动；</li>
+<li>如果是本地访问，确认localhost是否正确配置，一般来说配置nginx的私有ip地址加域名；</li>
+<li>tomcat和压测机器的/etc/hosts是否有回调到nginx上去，如果是同一个租户配置私有ip地址，若跨租户要配置为机房网络ip；</li>
+<li>配置好了nginx的.conf文件后，访问相应的域名出来的是“404，not found nginx”，去查看nginx的日志，看是否是缺失某些文件</li>
+</ol>
+<h3 id="2-2-Nginx-500-错误"><a href="#2-2-Nginx-500-错误" class="headerlink" title="2.2 Nginx 500 错误"></a>2.2 Nginx 500 错误</h3><p>如果遇到nginx 出现500错误，根本原因是服务器出现了未捕捉的异常，有两种情况：</p>
+<ol>
+<li>客户端只返回Internal Service Error，一般是 nginx 错误，查看nginx 的error日志</li>
+<li>客户端有完整堆栈信息，一般是upstream 出现未捕捉的异常，此时 nginx error无日志、upstream的应用容器一般有错误日志，可以查看：<br>应用出现运行时错误，比如常见的空指针错误、数组越界等<br>依赖服务异常，应用没有处理，引发运行时错误（比如调用其他服务API，当其他服务部可用可能返回null，但是应用未考虑这种情况，依然进行方法调用引发空指针错误）</li>
+</ol>
+<h3 id="2-3-Nginx-502-错误"><a href="#2-3-Nginx-502-错误" class="headerlink" title="2.3 Nginx 502 错误"></a>2.3 Nginx 502 错误</h3><p>Nginx 502 错误即Bad Gateway，其原因也分成nginx本身和后端应用，主要有以下几种情况：</p>
+<ol>
+<li>Nginx本身， 没有给upstream设置 DNS，一般错误日志会有：” no resolver defined to resolve”</li>
+<li>Nginx 本身，无法解析upstream 域名，一般错误日志会有：“could not be resolved”</li>
+<li>应用挂掉，导致nginx 连接出现连接拒绝；</li>
+<li>服务刚启动，启动期间，端口还未监听，或者端口已监听但是应用未启动完成，导致连接拒绝；</li>
+<li>突然大批量请求达到，Socket backlog（全连接队列）满，可能会导致内核返回RST，引发连接拒绝；</li>
+<li>使用连接线程池，当更新线程/线程重建时，有大批量连接到达导致线程不够用，引发连接拒绝（底层原因同5）；</li>
+<li>应用过载，应用容器会关闭一部分连接，一般nginx日志中会有“upstream prematurely closed connection”；</li>
+<li>其他nginx执行读取时出现的失败，错误日志会出现“readv() failed”信息。</li>
+</ol>
+<h3 id="2-4-Nginx-504错误"><a href="#2-4-Nginx-504错误" class="headerlink" title="2.4 Nginx 504错误"></a>2.4 Nginx 504错误</h3><p>Nginx 504 错误即 Gateway Time-out，其主要原因是 nginx到upstream出现 Connection timeout、write/read timeout。</p>
+<ol>
+<li>Nginx到应用服务器网络不通，检查nginx到应用服务器的网络，包括路由是否正确，如果不同租户，要检查租户间的ACL是否设置等</li>
+<li>Nginx写入到应用服务器写超时，常见是应用服务器繁忙且分布不出新的工作线程，backlog满了无法新建新连接，后续握手包被应用服务器内核丢弃</li>
+<li>Nginx读取应用服务器读取超时，一般是应用服务器的响应时间超过Nginx设置的超时</li>
+</ol>
 
           
         
@@ -491,7 +744,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -501,7 +754,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
