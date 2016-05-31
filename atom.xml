@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-05-31T04:46:40.000Z</updated>
+  <updated>2016-05-31T04:53:59.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2016/05/31/JVM%E4%BC%98%E5%8C%96%E7%9A%84%E5%87%A0%E4%B8%AA%E5%8E%9F%E5%88%99/"/>
     <id>http://yoursite.com/2016/05/31/JVM优化的几个原则/</id>
     <published>2016-05-31T04:34:33.000Z</published>
-    <updated>2016-05-31T04:46:40.000Z</updated>
+    <updated>2016-05-31T04:53:59.000Z</updated>
     <content type="html"><![CDATA[<p>1.minor gc回收原则：每次minor gc尽量多的回收垃圾对象<br>2.GC内存最大化原则：堆空间越大、垃圾回收效果越好<br>3.吞吐量、延迟、内存占用，三选二进行调优</p>
 <h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3><p>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
 <h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3><p>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
@@ -64,9 +64,16 @@
 <li>降低从新生代提升到老生代的速率<br>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过<br>-XX:+PrintTenuringDistribution  打印对象的年龄<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>-age   1:    6792744 bytes,    6792744 total<br>-age   2:    2366824 bytes,    9159568 total<br>-age   3:    1924344 bytes,   11083912 total</li>
 </ol>
 <hr>
-<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>-age   1:    6792744 bytes,    6792744 total<br>-age   2:    2366824 bytes,    9159568 total</p>
-<h2 id="age-3-1924344-bytes-11083912-total"><a href="#age-3-1924344-bytes-11083912-total" class="headerlink" title="-age   3:    1924344 bytes,   11083912 total"></a>-age   3:    1924344 bytes,   11083912 total</h2><p>因为留存的对象大小是11083912，远大于计算预估的的大小6291456，所以需要降低晋升阀值，加快进入老生代的速率，故是1 ，最大是4.若是一直保持这种状态下，那么需要增加survivor空间。<br>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>-age   1:      72032 bytes,      72032 total<br>-age   2:       1408 bytes,      73440 total</p>
-<h2 id="age-3-1352-bytes-74792-total"><a href="#age-3-1352-bytes-74792-total" class="headerlink" title="-age   3:       1352 bytes,      74792 total"></a>-age   3:       1352 bytes,      74792 total</h2><p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于<br>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset<br>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
+<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子:<br><code>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew
+Desired survivor size 6291456 bytes, new threshold 1 (max 4)
+\- age   1:    6792744 bytes,    6792744 total
+\- age   2:    2366824 bytes,    9159568 total
+\- age   3:    1924344 bytes,   11083912 total</code></p>
+<p>因为留存的对象大小是11083912，远大于计算预估的的大小6291456，所以需要降低晋升阀值，加快进入老生代的速率，故是1 ，最大是4.若是一直保持这种状态下，那么需要增加survivor空间。</p>
+<blockquote>
+<p>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>- age   1:      72032 bytes,      72032 total<br>- age   2:       1408 bytes,      73440 total<br>- age   3:       1352 bytes,      74792 total</p>
+</blockquote>
+<p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于<br>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset<br>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
 <p>持久代的回收<br>-XX:+CMSPermGenSweepingEnabled<br>-XX:CMSInitiatingPermOccupancyFraction<br>-XX:+CMSClassUnloadingEnabled<br>-XX:+CMSParallelRemarkEnabled<br>几个参数来设置</p>
 ]]></content>
     <summary type="html">
@@ -85,7 +92,7 @@
     <link href="http://yoursite.com/2016/05/31/%E6%80%A7%E8%83%BD%E5%AE%9A%E4%BD%8D%E6%95%B4%E4%BD%93%E6%80%9D%E8%B7%AF/"/>
     <id>http://yoursite.com/2016/05/31/性能定位整体思路/</id>
     <published>2016-05-30T16:13:08.000Z</published>
-    <updated>2016-05-30T17:37:29.000Z</updated>
+    <updated>2016-05-31T04:55:15.000Z</updated>
     <content type="html"><![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
 <h2 id="一、服务器定位"><a href="#一、服务器定位" class="headerlink" title="一、服务器定位"></a>一、服务器定位</h2><p>对于一般的应用，最常用的架构是：<br>客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。<br><img src="/2016/05/31/性能定位整体思路/1.png" alt="整体架构图" title="整体架构图"><br>下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TPS和响应时间。如果TPS过低或者响应时间过长，可以查看一下客户端是否有错误日志产生，从错误日志中定位问题，若没有错误日志可以从堆栈信息中定位问题，详见下文的1.1.3节；如果TPS和响应时间都正常就可以查看一下客户端的资源利用率的使用情况，详见下文的1.2节。<br><img src="/2016/05/31/性能定位整体思路/2.png" alt="整体流程图" title="整体流程图"></p>
 <h3 id="1-1-接口测试"><a href="#1-1-接口测试" class="headerlink" title="1.1 接口测试"></a>1.1 接口测试</h3><h4 id="1-1-1-接口的TPS和响应时间"><a href="#1-1-1-接口的TPS和响应时间" class="headerlink" title="1.1.1 接口的TPS和响应时间"></a>1.1.1 接口的TPS和响应时间</h4><p>在一般的接口测试，可以使用loadrunner或者在可以在测试机上安装grinder客户端，然后运行脚本，在log中可以看到本次执行的接口响应时间和TPS，如下图所示；<br><img src="/2016/05/31/性能定位整体思路/3.png" alt="TPS图" title="TPS图"></p>
@@ -245,7 +252,9 @@
 <h2 id="一、服务器定位"><a href="#一、服务器定位" c]]>
     </summary>
     
-      <category term="架构，性能测试" scheme="http://yoursite.com/tags/%E6%9E%B6%E6%9E%84%EF%BC%8C%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
+      <category term="架构" scheme="http://yoursite.com/tags/%E6%9E%B6%E6%9E%84/"/>
+    
+      <category term="性能测试" scheme="http://yoursite.com/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
     
   </entry>
   
@@ -254,7 +263,7 @@
     <link href="http://yoursite.com/2016/05/30/ELK%E6%9E%84%E5%BB%BA%E6%97%A5%E5%BF%97%E6%90%9C%E7%B4%A2%E6%9C%8D/"/>
     <id>http://yoursite.com/2016/05/30/ELK构建日志搜索服/</id>
     <published>2016-05-30T09:59:02.000Z</published>
-    <updated>2016-05-30T16:05:05.000Z</updated>
+    <updated>2016-05-31T04:54:27.000Z</updated>
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容易或不能及时处理和分析。这种程序、机器生成的数据可以捕获用户行为、安全风险、运行状态、服务水平、客户体验等关键信息。这是它成为增长最快、最复杂和最有价值的一种大数据的原因。如何改变组织使用数据的方式，帮助这些数据释放隐藏于其中的巨大价值，使程序、机器的日志数据对每个用户来说触手可及、随时可用并展示价值。这正是日志搜索服务所专注的地方。</p>
 <h2 id="日志搜索服务的应用场景"><a href="#日志搜索服务的应用场景" class="headerlink" title="日志搜索服务的应用场景"></a>日志搜索服务的应用场景</h2><p>日志搜索服务能够分布式的采集用户日志信息，集中到一个地方统一处理。经过智能化的解析日志格式，挖掘日志中隐藏的数据特性。再通过准实时的分词和索引，提供给用户近实时的结果分析查看，及自由的关键字查询和多样化的统计、分析功能。用户使用日志搜索服务将能方便的对自己的业务进行监控、统计分析、及安全与合规审计。<br>几种常见的日志搜索应用场景如下：<br>  服务程序bug分析<br>    1.快速定位发现程序日志错误或异常<br>    2.关联分析大规模分布式系统各个模块产生的大量Debug日志<br>  运维可用性监控及应用性能监控<br>    1.通过日志对服务器及应用程序状态实时监控<br>    2.通过日志对应用程序性能实时监控，及时发现性能瓶颈<br>    3.安全信息与事件管理<br>  网站用户及手机用户访问统计<br>    1.社交、视频、电商、游戏网站用户行为及交易行为分析<br>    2.客户端设备、操作系统、浏览器统计</p>
 <h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2> <img src="/2016/05/30/ELK构建日志搜索服/1.png" alt="整体架构图" title="整体架构图">
@@ -287,7 +296,9 @@
     <![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我们知道所有的网站、互联网应用、后台服务和其他复杂的IT基础设施每时每刻都在生成大量的数据，这些数据结构化不明显且多种多样，采用传统方法不容]]>
     </summary>
     
-      <category term="elk,日志" scheme="http://yoursite.com/tags/elk-%E6%97%A5%E5%BF%97/"/>
+      <category term="ELK" scheme="http://yoursite.com/tags/ELK/"/>
+    
+      <category term="日志搜索" scheme="http://yoursite.com/tags/%E6%97%A5%E5%BF%97%E6%90%9C%E7%B4%A2/"/>
     
   </entry>
   

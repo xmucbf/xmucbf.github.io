@@ -330,9 +330,16 @@
 <li>降低从新生代提升到老生代的速率<br>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过<br>-XX:+PrintTenuringDistribution  打印对象的年龄<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>-age   1:    6792744 bytes,    6792744 total<br>-age   2:    2366824 bytes,    9159568 total<br>-age   3:    1924344 bytes,   11083912 total</li>
 </ol>
 <hr>
-<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>-age   1:    6792744 bytes,    6792744 total<br>-age   2:    2366824 bytes,    9159568 total</p>
-<h2 id="age-3-1924344-bytes-11083912-total"><a href="#age-3-1924344-bytes-11083912-total" class="headerlink" title="-age   3:    1924344 bytes,   11083912 total"></a>-age   3:    1924344 bytes,   11083912 total</h2><p>因为留存的对象大小是11083912，远大于计算预估的的大小6291456，所以需要降低晋升阀值，加快进入老生代的速率，故是1 ，最大是4.若是一直保持这种状态下，那么需要增加survivor空间。<br>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>-age   1:      72032 bytes,      72032 total<br>-age   2:       1408 bytes,      73440 total</p>
-<h2 id="age-3-1352-bytes-74792-total"><a href="#age-3-1352-bytes-74792-total" class="headerlink" title="-age   3:       1352 bytes,      74792 total"></a>-age   3:       1352 bytes,      74792 total</h2><p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于<br>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset<br>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
+<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子:<br><code>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew
+Desired survivor size 6291456 bytes, new threshold 1 (max 4)
+\- age   1:    6792744 bytes,    6792744 total
+\- age   2:    2366824 bytes,    9159568 total
+\- age   3:    1924344 bytes,   11083912 total</code></p>
+<p>因为留存的对象大小是11083912，远大于计算预估的的大小6291456，所以需要降低晋升阀值，加快进入老生代的速率，故是1 ，最大是4.若是一直保持这种状态下，那么需要增加survivor空间。</p>
+<blockquote>
+<p>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>- age   1:      72032 bytes,      72032 total<br>- age   2:       1408 bytes,      73440 total<br>- age   3:       1352 bytes,      74792 total</p>
+</blockquote>
+<p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于<br>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset<br>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
 <p>持久代的回收<br>-XX:+CMSPermGenSweepingEnabled<br>-XX:CMSInitiatingPermOccupancyFraction<br>-XX:+CMSClassUnloadingEnabled<br>-XX:+CMSParallelRemarkEnabled<br>几个参数来设置</p>
 
           
@@ -793,7 +800,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
