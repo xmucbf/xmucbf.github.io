@@ -86,25 +86,16 @@
 
 
 
-<meta name="description" content="GC调优的一般原则
-minor gc回收原则：每次minor gc尽量多的回收垃圾对象
-GC内存最大化原则：堆空间越大、垃圾回收效果越好
-吞吐量、延迟、内存占用，三选二进行调优">
+<meta name="description" content="本文通过GC日志分析总结JVM优化的一般规则">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM优化的几个原则">
 <meta property="og:url" content="http://yoursite.com/2016/05/31/JVM优化的几个原则/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="GC调优的一般原则
-minor gc回收原则：每次minor gc尽量多的回收垃圾对象
-GC内存最大化原则：堆空间越大、垃圾回收效果越好
-吞吐量、延迟、内存占用，三选二进行调优">
-<meta property="og:updated_time" content="2016-05-31T05:45:38.000Z">
+<meta property="og:description" content="本文通过GC日志分析总结JVM优化的一般规则">
+<meta property="og:updated_time" content="2016-05-31T05:49:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM优化的几个原则">
-<meta name="twitter:description" content="GC调优的一般原则
-minor gc回收原则：每次minor gc尽量多的回收垃圾对象
-GC内存最大化原则：堆空间越大、垃圾回收效果越好
-吞吐量、延迟、内存占用，三选二进行调优">
+<meta name="twitter:description" content="本文通过GC日志分析总结JVM优化的一般规则">
 
 
 
@@ -289,12 +280,12 @@ GC内存最大化原则：堆空间越大、垃圾回收效果越好
       
 
       
-        <h2 id="GC调优的一般原则"><a href="#GC调优的一般原则" class="headerlink" title="GC调优的一般原则"></a>GC调优的一般原则</h2><ol>
+        <p>本文通过GC日志分析总结JVM优化的一般规则<br><a id="more"></a></p>
+<h2 id="JVM调优的一般原则"><a href="#JVM调优的一般原则" class="headerlink" title="JVM调优的一般原则"></a>JVM调优的一般原则</h2><ol>
 <li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
 <li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
 <li>吞吐量、延迟、内存占用，三选二进行调优</li>
 </ol>
-<a id="more"></a>
 <h2 id="调优前后配置对比"><a href="#调优前后配置对比" class="headerlink" title="调优前后配置对比"></a>调优前后配置对比</h2><h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3><p>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
 <h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3><p>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
 <h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><h3 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h3><h3 id="gc-日志分析"><a href="#gc-日志分析" class="headerlink" title="gc 日志分析"></a>gc 日志分析</h3><p>完整的gc日志：</p>
@@ -539,7 +530,7 @@ GC内存最大化原则：堆空间越大、垃圾回收效果越好
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GC调优的一般原则"><span class="nav-number">1.</span> <span class="nav-text">GC调优的一般原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调优前后配置对比"><span class="nav-number">2.</span> <span class="nav-text">调优前后配置对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#默认的配置："><span class="nav-number">2.1.</span> <span class="nav-text">默认的配置：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改的第一版本配置："><span class="nav-number">2.2.</span> <span class="nav-text">修改的第一版本配置：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实战"><span class="nav-number">3.</span> <span class="nav-text">实战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-内存大小的调整"><span class="nav-number">3.1.</span> <span class="nav-text">一:内存大小的调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gc-日志分析"><span class="nav-number">3.2.</span> <span class="nav-text">gc 日志分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据分析结论"><span class="nav-number">3.3.</span> <span class="nav-text">数据分析结论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用优化原则一"><span class="nav-number">3.4.</span> <span class="nav-text">应用优化原则一</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-调优延迟-响应性-–总纲"><span class="nav-number">4.</span> <span class="nav-text">二 调优延迟/响应性 –总纲</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-调优延迟-响应性-–新生代"><span class="nav-number">5.</span> <span class="nav-text">三 调优延迟/响应性 –新生代</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置分析"><span class="nav-number">5.1.</span> <span class="nav-text">配置分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用优化原则二-–-新生代"><span class="nav-number">5.2.</span> <span class="nav-text">应用优化原则二 – 新生代</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-调优延迟-响应性-–老生代"><span class="nav-number">6.</span> <span class="nav-text">四 调优延迟/响应性 –老生代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-调优延迟-响应性-–-cms调优"><span class="nav-number">7.</span> <span class="nav-text">五 调优延迟/响应性 – cms调优</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关键点"><span class="nav-number">7.1.</span> <span class="nav-text">关键点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决第三个问题的手段"><span class="nav-number">7.2.</span> <span class="nav-text">解决第三个问题的手段</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM调优的一般原则"><span class="nav-number">1.</span> <span class="nav-text">JVM调优的一般原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调优前后配置对比"><span class="nav-number">2.</span> <span class="nav-text">调优前后配置对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#默认的配置："><span class="nav-number">2.1.</span> <span class="nav-text">默认的配置：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改的第一版本配置："><span class="nav-number">2.2.</span> <span class="nav-text">修改的第一版本配置：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实战"><span class="nav-number">3.</span> <span class="nav-text">实战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-内存大小的调整"><span class="nav-number">3.1.</span> <span class="nav-text">一:内存大小的调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gc-日志分析"><span class="nav-number">3.2.</span> <span class="nav-text">gc 日志分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据分析结论"><span class="nav-number">3.3.</span> <span class="nav-text">数据分析结论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用优化原则一"><span class="nav-number">3.4.</span> <span class="nav-text">应用优化原则一</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-调优延迟-响应性-–总纲"><span class="nav-number">4.</span> <span class="nav-text">二 调优延迟/响应性 –总纲</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-调优延迟-响应性-–新生代"><span class="nav-number">5.</span> <span class="nav-text">三 调优延迟/响应性 –新生代</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置分析"><span class="nav-number">5.1.</span> <span class="nav-text">配置分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用优化原则二-–-新生代"><span class="nav-number">5.2.</span> <span class="nav-text">应用优化原则二 – 新生代</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-调优延迟-响应性-–老生代"><span class="nav-number">6.</span> <span class="nav-text">四 调优延迟/响应性 –老生代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-调优延迟-响应性-–-cms调优"><span class="nav-number">7.</span> <span class="nav-text">五 调优延迟/响应性 – cms调优</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关键点"><span class="nav-number">7.1.</span> <span class="nav-text">关键点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决第三个问题的手段"><span class="nav-number">7.2.</span> <span class="nav-text">解决第三个问题的手段</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
