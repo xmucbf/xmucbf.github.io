@@ -286,11 +286,19 @@
       
         
           
-            <p>1.minor gc回收原则：每次minor gc尽量多的回收垃圾对象<br>2.GC内存最大化原则：堆空间越大、垃圾回收效果越好<br>3.吞吐量、延迟、内存占用，三选二进行调优</p>
-<h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3><p>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
-<h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3><p>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
-<h2 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h2><p>完整的gc日志：<br>1406.535: [GC 1406.535: [ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs] 421864K-&gt;371433K(761664K), 0.0178630 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]<br>1) GC 1406.535:触发的是minor gc 时间点是jvm启动到现在的时间：1406.535<br>2) [ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs]：新生代大小是57536，使用的是ParNew算法，从51390K降低到了958K。消耗的时间是：0.0176440秒。回收了50432 ，同时也告诉了我们survivor大小是958K<br>3) 421864K-&gt;371433K(761664K), 0.0178630 secs : 总共的堆大小是761664，一次minor gc后从421864降到了371433，降低的是50431,也就是说有1k的数据从新生代进入了老生代。但是老生代大小没有发生变化，估计是它自己计算错误了。<br>4) [Times: user=0.02 sys=0.00, real=0.01 secs]:用户态消耗的时间是：0.02 系统态消耗的时间：0.00，实际消耗的时间0.01<br>从上面数据可以看出堆大小：761664K(743M) 新生代：57536K(56M) 老生代：704128K(687M)<br>看一次fullgc的情况<br>20.837: [Full GC (System) 20.837: [CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs] 126205K-&gt;80428K(761664K), [CMS Perm : 113263K-&gt;113166K(358400K)], 0.5817070 secs] [Times: user=0.57 sys=0.02, real=0.58 secs]<br>1) [CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs]:老生代大小从109217K降到了80428K，总共大小是704128K。之后就再也没有发生full gc,也就是说活跃的数据是80428K<br>2) [CMS Perm : 113263K-&gt;113166K(358400K)；持久代的大小是358400K，活跃的数据是113166K<br>再看看一些gc情况：<br>zhaoming@zhaoming:~$ jstat -gcutil 4943 5000 1000<br>  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT<br>  2.07   0.00  73.92  77.17  64.03    646   15.361     3    0.628   15.989<br>  2.07   0.00  84.31  77.17  64.03    646   15.361     3    0.628   15.989<br>  2.07   0.00  93.63  77.17  64.03    646   15.361     3    0.628   15.989<br>  0.00   2.15   4.29  77.17  64.03    647   15.393     3    0.628   16.020<br>一直发生的是minor gc没有发生full gc的情况了。</p>
-<h3 id="上面的数据分析"><a href="#上面的数据分析" class="headerlink" title="上面的数据分析"></a>上面的数据分析</h3><ol>
+            <ol>
+<li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
+<li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
+<li>吞吐量、延迟、内存占用，三选二进行调优<h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd<h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</li>
+</ol>
+<h2 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h2><h3 id="gc-日志分析"><a href="#gc-日志分析" class="headerlink" title="gc 日志分析"></a>gc 日志分析</h3><p>完整的gc日志：<br>1406.535: [GC 1406.535: [ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs] 421864K-&gt;371433K(761664K), 0.0178630 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]</p>
+<ol>
+<li>GC 1406.535:触发的是minor gc 时间点是jvm启动到现在的时间：1406.535</li>
+<li>[ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs]：新生代大小是57536，使用的是ParNew算法，从51390K降低到了958K。消耗的时间是：0.0176440秒。回收了50432 ，同时也告诉了我们survivor大小是958K</li>
+<li>421864K-&gt;371433K(761664K), 0.0178630 secs : 总共的堆大小是761664，一次minor gc后从421864降到了371433，降低的是50431,也就是说有1k的数据从新生代进入了老生代。但是老生代大小没有发生变化，估计是它自己计算错误了。</li>
+<li>[Times: user=0.02 sys=0.00, real=0.01 secs]:用户态消耗的时间是：0.02 系统态消耗的时间：0.00，实际消耗的时间0.01<br>从上面数据可以看出堆大小：761664K(743M) 新生代：57536K(56M) 老生代：704128K(687M)<br>看一次fullgc的情况<br>20.837: [Full GC (System) 20.837: [CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs] 126205K-&gt;80428K(761664K), [CMS Perm : 113263K-&gt;113166K(358400K)], 0.5817070 secs] [Times: user=0.57 sys=0.02, real=0.58 secs]</li>
+<li>[CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs]:老生代大小从109217K降到了80428K，总共大小是704128K。之后就再也没有发生full gc,也就是说活跃的数据是80428K</li>
+<li>[CMS Perm : 113263K-&gt;113166K(358400K)；持久代的大小是358400K，活跃的数据是113166K<br>再看看一些gc情况：<br>zhaoming@zhaoming:~$ jstat -gcutil 4943 5000 1000<br>S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT<br>2.07   0.00  73.92  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  84.31  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  93.63  77.17  64.03    646   15.361     3    0.628   15.989<br>0.00   2.15   4.29  77.17  64.03    647   15.393     3    0.628   16.020<br>一直发生的是minor gc没有发生full gc的情况了。<h3 id="上面的数据分析"><a href="#上面的数据分析" class="headerlink" title="上面的数据分析"></a>上面的数据分析</h3></li>
 <li>老生代总大小：704128K(687M),堆大小：761664K(743M),新生代：57536K(56M)</li>
 <li>老生代活跃数据大小：80428K,因为整个日志上看，只发生了一次full gc</li>
 <li>垃圾回收器是CMS</li>
@@ -327,14 +335,15 @@
 <p>解决第三个问题的手段</p>
 <ol>
 <li>足够大的内存，减少stop-the-world的压缩</li>
-<li>降低从新生代提升到老生代的速率<br>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过<br>-XX:+PrintTenuringDistribution  打印对象的年龄<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>-age   1:    6792744 bytes,    6792744 total<br>-age   2:    2366824 bytes,    9159568 total<br>-age   3:    1924344 bytes,   11083912 total</li>
+<li>降低从新生代提升到老生代的速率<br>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过<blockquote>
+<p>-XX:+PrintTenuringDistribution  打印对象的年龄<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>- age   1:    6792744 bytes,    6792744 total<br>- age   2:    2366824 bytes,    9159568 total<br>- age   3:    1924344 bytes,   11083912 total</p>
+</blockquote>
+</li>
 </ol>
-<hr>
-<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子:<br><code>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew
-Desired survivor size 6291456 bytes, new threshold 1 (max 4)
-\- age   1:    6792744 bytes,    6792744 total
-\- age   2:    2366824 bytes,    9159568 total
-\- age   3:    1924344 bytes,   11083912 total</code></p>
+<p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子:</p>
+<blockquote>
+<p>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>- age   1:    6792744 bytes,    6792744 total<br>- age   2:    2366824 bytes,    9159568 total<br>- age   3:    1924344 bytes,   11083912 total`</p>
+</blockquote>
 <p>因为留存的对象大小是11083912，远大于计算预估的的大小6291456，所以需要降低晋升阀值，加快进入老生代的速率，故是1 ，最大是4.若是一直保持这种状态下，那么需要增加survivor空间。</p>
 <blockquote>
 <p>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>- age   1:      72032 bytes,      72032 total<br>- age   2:       1408 bytes,      73440 total<br>- age   3:       1352 bytes,      74792 total</p>
