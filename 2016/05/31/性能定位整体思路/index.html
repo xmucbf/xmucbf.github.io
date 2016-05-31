@@ -73,6 +73,8 @@
 
 
 
+  
+
 
   <link rel="alternate" href="/atom.xml" title="码农的耕地" type="application/atom+xml" />
 
@@ -86,14 +88,12 @@
 
 
 
-<meta name="description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
-一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta name="description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="性能定位整体思路">
 <meta property="og:url" content="http://yoursite.com/2016/05/31/性能定位整体思路/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
-一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta property="og:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。">
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/1.png">
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/2.png">
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/3.png">
@@ -110,11 +110,10 @@
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/14.png">
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/15.png">
 <meta property="og:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/16.png">
-<meta property="og:updated_time" content="2016-05-31T04:55:15.000Z">
+<meta property="og:updated_time" content="2016-05-31T05:45:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="性能定位整体思路">
-<meta name="twitter:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。
-一、服务器定位对于一般的应用，最常用的架构是：客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TP">
+<meta name="twitter:description" content="一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。">
 <meta name="twitter:image" content="http://yoursite.com/2016/05/31/性能定位整体思路/1.png">
 
 
@@ -300,7 +299,7 @@
       
 
       
-        <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
+        <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。<br><a id="more"></a></p>
 <h2 id="一、服务器定位"><a href="#一、服务器定位" class="headerlink" title="一、服务器定位"></a>一、服务器定位</h2><p>对于一般的应用，最常用的架构是：<br>客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。<br><img src="/2016/05/31/性能定位整体思路/1.png" alt="整体架构图" title="整体架构图"><br>下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TPS和响应时间。如果TPS过低或者响应时间过长，可以查看一下客户端是否有错误日志产生，从错误日志中定位问题，若没有错误日志可以从堆栈信息中定位问题，详见下文的1.1.3节；如果TPS和响应时间都正常就可以查看一下客户端的资源利用率的使用情况，详见下文的1.2节。<br><img src="/2016/05/31/性能定位整体思路/2.png" alt="整体流程图" title="整体流程图"></p>
 <h3 id="1-1-接口测试"><a href="#1-1-接口测试" class="headerlink" title="1.1 接口测试"></a>1.1 接口测试</h3><h4 id="1-1-1-接口的TPS和响应时间"><a href="#1-1-1-接口的TPS和响应时间" class="headerlink" title="1.1.1 接口的TPS和响应时间"></a>1.1.1 接口的TPS和响应时间</h4><p>在一般的接口测试，可以使用loadrunner或者在可以在测试机上安装grinder客户端，然后运行脚本，在log中可以看到本次执行的接口响应时间和TPS，如下图所示；<br><img src="/2016/05/31/性能定位整体思路/3.png" alt="TPS图" title="TPS图"></p>
 <h4 id="1-1-2-查看错误日志"><a href="#1-1-2-查看错误日志" class="headerlink" title="1.1.2 查看错误日志"></a>1.1.2 查看错误日志</h4><p>查看是否有error日志，从error中获取信息，例如下图从测试客户端的error日志中查看到的错误信息：<br><img src="/2016/05/31/性能定位整体思路/4.png" alt="errorlog图" title="errorlog图"><br>错误日志中会有错误说明和错误的提示信息，可以从中获取到定位问题的方法，例如图示中的错误提示为：“A JSONObject text must begin with ‘{‘ at character 1”表示JSON对象的格式不对，可以参考代码做相应的修改。</p>

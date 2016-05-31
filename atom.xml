@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-05-31T05:10:53.000Z</updated>
+  <updated>2016-05-31T05:45:38.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,12 +19,13 @@
     <link href="http://yoursite.com/2016/05/31/JVM%E4%BC%98%E5%8C%96%E7%9A%84%E5%87%A0%E4%B8%AA%E5%8E%9F%E5%88%99/"/>
     <id>http://yoursite.com/2016/05/31/JVM优化的几个原则/</id>
     <published>2016-05-31T04:34:33.000Z</published>
-    <updated>2016-05-31T05:10:53.000Z</updated>
+    <updated>2016-05-31T05:45:38.000Z</updated>
     <content type="html"><![CDATA[<h2 id="GC调优的一般原则"><a href="#GC调优的一般原则" class="headerlink" title="GC调优的一般原则"></a>GC调优的一般原则</h2><ol>
 <li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
 <li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
 <li>吞吐量、延迟、内存占用，三选二进行调优</li>
 </ol>
+<a id="more"></a>
 <h2 id="调优前后配置对比"><a href="#调优前后配置对比" class="headerlink" title="调优前后配置对比"></a>调优前后配置对比</h2><h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3><p>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
 <h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3><p>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
 <h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><h3 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h3><h3 id="gc-日志分析"><a href="#gc-日志分析" class="headerlink" title="gc 日志分析"></a>gc 日志分析</h3><p>完整的gc日志：</p>
@@ -116,7 +117,11 @@
 ]]></content>
     <summary type="html">
     <![CDATA[<h2 id="GC调优的一般原则"><a href="#GC调优的一般原则" class="headerlink" title="GC调优的一般原则"></a>GC调优的一般原则</h2><ol>
-<li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</l]]>
+<li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
+<li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
+<li>吞吐量、延迟、内存占用，三选二进行调优</li>
+</ol>]]>
+    
     </summary>
     
       <category term="java" scheme="http://yoursite.com/tags/java/"/>
@@ -130,8 +135,8 @@
     <link href="http://yoursite.com/2016/05/31/%E6%80%A7%E8%83%BD%E5%AE%9A%E4%BD%8D%E6%95%B4%E4%BD%93%E6%80%9D%E8%B7%AF/"/>
     <id>http://yoursite.com/2016/05/31/性能定位整体思路/</id>
     <published>2016-05-30T16:13:08.000Z</published>
-    <updated>2016-05-31T04:55:15.000Z</updated>
-    <content type="html"><![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
+    <updated>2016-05-31T05:45:53.000Z</updated>
+    <content type="html"><![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。<br><a id="more"></a></p>
 <h2 id="一、服务器定位"><a href="#一、服务器定位" class="headerlink" title="一、服务器定位"></a>一、服务器定位</h2><p>对于一般的应用，最常用的架构是：<br>客户端——nginx——tomcat等应用服务器——数据库/Memcache/redis。<br><img src="/2016/05/31/性能定位整体思路/1.png" alt="整体架构图" title="整体架构图"><br>下图是一个定位问题的结构图（盗图）。一般先从客户端入手，查看客户端的TPS和响应时间。如果TPS过低或者响应时间过长，可以查看一下客户端是否有错误日志产生，从错误日志中定位问题，若没有错误日志可以从堆栈信息中定位问题，详见下文的1.1.3节；如果TPS和响应时间都正常就可以查看一下客户端的资源利用率的使用情况，详见下文的1.2节。<br><img src="/2016/05/31/性能定位整体思路/2.png" alt="整体流程图" title="整体流程图"></p>
 <h3 id="1-1-接口测试"><a href="#1-1-接口测试" class="headerlink" title="1.1 接口测试"></a>1.1 接口测试</h3><h4 id="1-1-1-接口的TPS和响应时间"><a href="#1-1-1-接口的TPS和响应时间" class="headerlink" title="1.1.1 接口的TPS和响应时间"></a>1.1.1 接口的TPS和响应时间</h4><p>在一般的接口测试，可以使用loadrunner或者在可以在测试机上安装grinder客户端，然后运行脚本，在log中可以看到本次执行的接口响应时间和TPS，如下图所示；<br><img src="/2016/05/31/性能定位整体思路/3.png" alt="TPS图" title="TPS图"></p>
 <h4 id="1-1-2-查看错误日志"><a href="#1-1-2-查看错误日志" class="headerlink" title="1.1.2 查看错误日志"></a>1.1.2 查看错误日志</h4><p>查看是否有error日志，从error中获取信息，例如下图从测试客户端的error日志中查看到的错误信息：<br><img src="/2016/05/31/性能定位整体思路/4.png" alt="errorlog图" title="errorlog图"><br>错误日志中会有错误说明和错误的提示信息，可以从中获取到定位问题的方法，例如图示中的错误提示为：“A JSONObject text must begin with ‘{‘ at character 1”表示JSON对象的格式不对，可以参考代码做相应的修改。</p>
@@ -286,8 +291,8 @@
 </ol>
 ]]></content>
     <summary type="html">
-    <![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。</p>
-<h2 id="一、服务器定位"><a href="#一、服务器定位" c]]>
+    <![CDATA[<p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。<br>]]>
+    
     </summary>
     
       <category term="架构" scheme="http://yoursite.com/tags/%E6%9E%B6%E6%9E%84/"/>
