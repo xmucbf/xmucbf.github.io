@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-05-31T05:00:02.000Z</updated>
+  <updated>2016-05-31T05:10:53.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,25 +19,40 @@
     <link href="http://yoursite.com/2016/05/31/JVM%E4%BC%98%E5%8C%96%E7%9A%84%E5%87%A0%E4%B8%AA%E5%8E%9F%E5%88%99/"/>
     <id>http://yoursite.com/2016/05/31/JVM优化的几个原则/</id>
     <published>2016-05-31T04:34:33.000Z</published>
-    <updated>2016-05-31T05:00:02.000Z</updated>
-    <content type="html"><![CDATA[<ol>
+    <updated>2016-05-31T05:10:53.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="GC调优的一般原则"><a href="#GC调优的一般原则" class="headerlink" title="GC调优的一般原则"></a>GC调优的一般原则</h2><ol>
 <li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
 <li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
-<li>吞吐量、延迟、内存占用，三选二进行调优<h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd<h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</li>
+<li>吞吐量、延迟、内存占用，三选二进行调优</li>
 </ol>
-<h2 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h2><h3 id="gc-日志分析"><a href="#gc-日志分析" class="headerlink" title="gc 日志分析"></a>gc 日志分析</h3><p>完整的gc日志：<br>1406.535: [GC 1406.535: [ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs] 421864K-&gt;371433K(761664K), 0.0178630 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]</p>
+<h2 id="调优前后配置对比"><a href="#调优前后配置对比" class="headerlink" title="调优前后配置对比"></a>调优前后配置对比</h2><h3 id="默认的配置："><a href="#默认的配置：" class="headerlink" title="默认的配置："></a>默认的配置：</h3><p>-Xms350m<br>-Xmx750m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
+<h3 id="修改的第一版本配置："><a href="#修改的第一版本配置：" class="headerlink" title="修改的第一版本配置："></a>修改的第一版本配置：</h3><p>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
+<h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><h3 id="一-内存大小的调整"><a href="#一-内存大小的调整" class="headerlink" title="一:内存大小的调整"></a>一:内存大小的调整</h3><h3 id="gc-日志分析"><a href="#gc-日志分析" class="headerlink" title="gc 日志分析"></a>gc 日志分析</h3><p>完整的gc日志：</p>
+<blockquote>
+<p>1406.535: [GC 1406.535: [ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs] 421864K-&gt;371433K(761664K), 0.0178630 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]</p>
+</blockquote>
 <ol>
 <li>GC 1406.535:触发的是minor gc 时间点是jvm启动到现在的时间：1406.535</li>
 <li>[ParNew: 51390K-&gt;958K(57536K), 0.0176440 secs]：新生代大小是57536，使用的是ParNew算法，从51390K降低到了958K。消耗的时间是：0.0176440秒。回收了50432 ，同时也告诉了我们survivor大小是958K</li>
 <li>421864K-&gt;371433K(761664K), 0.0178630 secs : 总共的堆大小是761664，一次minor gc后从421864降到了371433，降低的是50431,也就是说有1k的数据从新生代进入了老生代。但是老生代大小没有发生变化，估计是它自己计算错误了。</li>
-<li>[Times: user=0.02 sys=0.00, real=0.01 secs]:用户态消耗的时间是：0.02 系统态消耗的时间：0.00，实际消耗的时间0.01<br>从上面数据可以看出堆大小：761664K(743M) 新生代：57536K(56M) 老生代：704128K(687M)<br>看一次fullgc的情况<br>20.837: [Full GC (System) 20.837: [CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs] 126205K-&gt;80428K(761664K), [CMS Perm : 113263K-&gt;113166K(358400K)], 0.5817070 secs] [Times: user=0.57 sys=0.02, real=0.58 secs]</li>
-<li>[CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs]:老生代大小从109217K降到了80428K，总共大小是704128K。之后就再也没有发生full gc,也就是说活跃的数据是80428K</li>
-<li>[CMS Perm : 113263K-&gt;113166K(358400K)；持久代的大小是358400K，活跃的数据是113166K<br>再看看一些gc情况：<br>zhaoming@zhaoming:~$ jstat -gcutil 4943 5000 1000<br>S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT<br>2.07   0.00  73.92  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  84.31  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  93.63  77.17  64.03    646   15.361     3    0.628   15.989<br>0.00   2.15   4.29  77.17  64.03    647   15.393     3    0.628   16.020<br>一直发生的是minor gc没有发生full gc的情况了。<h3 id="上面的数据分析"><a href="#上面的数据分析" class="headerlink" title="上面的数据分析"></a>上面的数据分析</h3></li>
+<li><p>[Times: user=0.02 sys=0.00, real=0.01 secs]:用户态消耗的时间是：0.02 系统态消耗的时间：0.00，实际消耗的时间0.01<br>从上面数据可以看出堆大小：761664K(743M) 新生代：57536K(56M) 老生代：704128K(687M)<br>看一次fullgc的情况</p>
+<blockquote>
+<p>20.837: [Full GC (System) 20.837: [CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs] 126205K-&gt;80428K(761664K), [CMS Perm : 113263K-&gt;113166K(358400K)], 0.5817070 secs] [Times: user=0.57 sys=0.02, real=0.58 secs]</p>
+</blockquote>
+</li>
+<li><p>[CMS: 109217K-&gt;80428K(704128K), 0.5815740 secs]:老生代大小从109217K降到了80428K，总共大小是704128K。之后就再也没有发生full gc,也就是说活跃的数据是80428K</p>
+</li>
+<li>[CMS Perm : 113263K-&gt;113166K(358400K)；持久代的大小是358400K，活跃的数据是113166K<br>再看看一些gc情况：<blockquote>
+<p>zhaoming@zhaoming:~$ jstat -gcutil 4943 5000 1000<br>S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT<br>2.07   0.00  73.92  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  84.31  77.17  64.03    646   15.361     3    0.628   15.989<br>2.07   0.00  93.63  77.17  64.03    646   15.361     3    0.628   15.989<br>0.00   2.15   4.29  77.17  64.03    647   15.393     3    0.628   16.020<br>一直发生的是minor gc没有发生full gc的情况了。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="数据分析结论"><a href="#数据分析结论" class="headerlink" title="数据分析结论"></a>数据分析结论</h3><ol>
 <li>老生代总大小：704128K(687M),堆大小：761664K(743M),新生代：57536K(56M)</li>
 <li>老生代活跃数据大小：80428K,因为整个日志上看，只发生了一次full gc</li>
 <li>垃圾回收器是CMS</li>
 </ol>
-<h3 id="内存大小设置："><a href="#内存大小设置：" class="headerlink" title="内存大小设置："></a>内存大小设置：</h3><h3 id="优化原则一"><a href="#优化原则一" class="headerlink" title="优化原则一"></a>优化原则一</h3><ol>
+<h3 id="应用优化原则一"><a href="#应用优化原则一" class="headerlink" title="应用优化原则一"></a>应用优化原则一</h3><ol>
 <li>-Xmx和-Xms设置为活跃数据大小的3~4倍   这里就是80428的3~4倍(235m~~314M),当前设置的是750M,应该是有余的</li>
 <li>PermSize和MaxPermSize设置为活跃数据大小的1.2~1.5倍(93M~~117M) ,当前也是有余的</li>
 <li>新生代设置为活跃数据大小的1~1.5倍(78m~~117m),这里默认的新生代大小是不够的，我们可以提升下。</li>
@@ -48,32 +63,38 @@
 <li>测量Full gc的最差持续时间</li>
 <li>统计最差情况下，Full gc的频率</li>
 </ol>
-<h2 id="三-调优延迟-响应性-–新生代"><a href="#三-调优延迟-响应性-–新生代" class="headerlink" title="三 调优延迟/响应性 –新生代"></a>三 调优延迟/响应性 –新生代</h2><p>-Xmn120m  – 发生改变的数据<br>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd<br>开idea，启用tomcat，发现还是没有fullgc，说明idea中大量的对象都是朝生夕死，活跃数据很稳定。<br>2014-04-08T20:39:27.207+0800: 243.821: [GC 243.822: [ParNew: 110592K-&gt;10359K(110592K), 0.0855940 secs] 351176K-&gt;259675K(755712K), 0.0860110 secs] [Times: user=0.08 sys=0.01, real=0.09 secs]<br>2014-04-08T20:39:29.575+0800: 246.189: [GC 246.189: [ParNew: 108663K-&gt;4195K(110592K), 0.0203700 secs] 357979K-&gt;253512K(755712K), 0.0209180 secs] [Times: user=0.04 sys=0.00, real=0.02 secs]<br>2014-04-08T20:39:33.517+0800: 250.131: [GC 250.131: [ParNew: 102499K-&gt;8590K(110592K), 0.0742860 secs] 351816K-&gt;257907K(755712K), 0.0746160 secs] [Times: user=0.10 sys=0.01, real=0.07 secs]<br>2014-04-08T20:39:35.489+0800: 252.103: [GC 252.103: [ParNew: 106894K-&gt;12288K(110592K), 0.0735800 secs] 356211K-&gt;263572K(755712K), 0.0738440 secs] [Times: user=0.10 sys=0.01, real=0.07 secs]<br>平均gc的时间是 0.05s，若是你要求的gc时间是0.04，那么减少新生代，若是要求的时间是0.08s，那么可以扩大一点新生代，在保持总大小不变的情况下，增加或是减少10%的大小。<br>平均的gc频率是2.5s左右，若是你期望的是5s，填充完2048M的新生代需要2.5s，那么要5s的话2048*(5/2.5) = 4096m，这个时候需要扩大新生代的内存大小，总的大小都需要增加2048m</p>
-<h3 id="优化原则二-–-新生代"><a href="#优化原则二-–-新生代" class="headerlink" title="优化原则二 – 新生代"></a>优化原则二 – 新生代</h3><ol>
+<h2 id="三-调优延迟-响应性-–新生代"><a href="#三-调优延迟-响应性-–新生代" class="headerlink" title="三 调优延迟/响应性 –新生代"></a>三 调优延迟/响应性 –新生代</h2><h3 id="配置分析"><a href="#配置分析" class="headerlink" title="配置分析"></a>配置分析</h3><blockquote>
+<p>-Xmn120m  – 发生改变的数据<br>-Xms750m<br>-Xmx750m<br>-XX:PermSize=350m<br>-XX:MaxPermSize=350m<br>-XX:ReservedCodeCacheSize=96m<br>-XX:+PrintGCTimeStamps<br>-XX:+PrintGCDetails<br>-Xloggc:/tmp/idea.log<br>-ea<br>-Dsun.io.useCanonCaches=false<br>-Djava.net.preferIPv4Stack=true<br>-XX:+UseCodeCacheFlushing<br>-XX:+UseConcMarkSweepGC<br>-XX:SoftRefLRUPolicyMSPerMB=50<br>-Dawt.useSystemAAFontSettings=lcd</p>
+</blockquote>
+<p>开idea，启用tomcat，发现还是没有fullgc，说明idea中大量的对象都是朝生夕死，活跃数据很稳定。</p>
+<blockquote>
+<p>2014-04-08T20:39:27.207+0800: 243.821: [GC 243.822: [ParNew: 110592K-&gt;10359K(110592K), 0.0855940 secs] 351176K-&gt;259675K(755712K), 0.0860110 secs] [Times: user=0.08 sys=0.01, real=0.09 secs]<br>2014-04-08T20:39:29.575+0800: 246.189: [GC 246.189: [ParNew: 108663K-&gt;4195K(110592K), 0.0203700 secs] 357979K-&gt;253512K(755712K), 0.0209180 secs] [Times: user=0.04 sys=0.00, real=0.02 secs]<br>2014-04-08T20:39:33.517+0800: 250.131: [GC 250.131: [ParNew: 102499K-&gt;8590K(110592K), 0.0742860 secs] 351816K-&gt;257907K(755712K), 0.0746160 secs] [Times: user=0.10 sys=0.01, real=0.07 secs]<br>2014-04-08T20:39:35.489+0800: 252.103: [GC 252.103: [ParNew: 106894K-&gt;12288K(110592K), 0.0735800 secs] 356211K-&gt;263572K(755712K), 0.0738440 secs] [Times: user=0.10 sys=0.01, real=0.07 secs]</p>
+</blockquote>
+<p>平均gc的时间是 0.05s，若是你要求的gc时间是0.04，那么减少新生代，若是要求的时间是0.08s，那么可以扩大一点新生代，在保持总大小不变的情况下，增加或是减少10%的大小。<br>平均的gc频率是2.5s左右，若是你期望的是5s，填充完2048M的新生代需要2.5s，那么要5s的话2048*(5/2.5) = 4096m，这个时候需要扩大新生代的内存大小，总的大小都需要增加2048m</p>
+<h3 id="应用优化原则二-–-新生代"><a href="#应用优化原则二-–-新生代" class="headerlink" title="应用优化原则二 – 新生代"></a>应用优化原则二 – 新生代</h3><ol>
 <li>老年代空间不应该小于活跃数据的1.5倍</li>
 <li>新生代空间至少为java堆大小的10%.通过-Xmx和-Xms可以设置</li>
 <li>增大java堆大小时候，不能超过物理堆大小<br>tips：吞吐量和延迟考虑的话 -Xms、-Xmx设置为相同。只有在两者相同的情况下，设置-Xmn才有意义。不然可以通过-XX:MaxNewSize、-XX:NewSize两个参数来设置新生代的大小。</li>
 </ol>
-<h2 id="二-调优延迟-响应性-–老生代"><a href="#二-调优延迟-响应性-–老生代" class="headerlink" title="二 调优延迟/响应性 –老生代"></a>二 调优延迟/响应性 –老生代</h2><p>若是老生代大小是4096m，活跃数据是1370m，那么空闲数据是2726，minor gc每次提升的数据是21m，minor gc的频率是2.147s，那么每秒提升的数据是21494/2.147 = 10011kb/s，那么填充满2726，需要2726/10 = 272.6s 大约4.5分钟。<br>若是你的full gc时间间隔大于这个数值，那么老生代的大小是可以的，若是小于这个数据，就需要增加老生代的大小了。</p>
-<h2 id="二-调优延迟-响应性-–-cms调优"><a href="#二-调优延迟-响应性-–-cms调优" class="headerlink" title="二 调优延迟/响应性 – cms调优"></a>二 调优延迟/响应性 – cms调优</h2><ol>
+<h2 id="四-调优延迟-响应性-–老生代"><a href="#四-调优延迟-响应性-–老生代" class="headerlink" title="四 调优延迟/响应性 –老生代"></a>四 调优延迟/响应性 –老生代</h2><p>若是老生代大小是4096m，活跃数据是1370m，那么空闲数据是2726，minor gc每次提升的数据是21m，minor gc的频率是2.147s，那么每秒提升的数据是21494/2.147 = 10011kb/s，那么填充满2726，需要2726/10 = 272.6s 大约4.5分钟。<br>若是你的full gc时间间隔大于这个数值，那么老生代的大小是可以的，若是小于这个数据，就需要增加老生代的大小了。</p>
+<h2 id="五-调优延迟-响应性-–-cms调优"><a href="#五-调优延迟-响应性-–-cms调优" class="headerlink" title="五 调优延迟/响应性 – cms调优"></a>五 调优延迟/响应性 – cms调优</h2><ol>
 <li>full gc时候一定会触发一次minor gc，除非你设置了 -XX:ScavengeBeforeFull选项 。</li>
 <li>因为是并行的收集，延迟性会有提升</li>
 <li>压缩式的gc，就是内存碎片整理会消耗大量的时间</li>
 </ol>
-<p>几个关键点</p>
-<ol>
+<h3 id="关键点"><a href="#关键点" class="headerlink" title="关键点"></a>关键点</h3><ol>
 <li>新生代提升到老生代的速率</li>
 <li>并行回收老生代空间的速率</li>
 <li>老生代的碎片化空间</li>
 </ol>
-<p>解决第三个问题的手段</p>
-<ol>
+<h3 id="解决第三个问题的手段"><a href="#解决第三个问题的手段" class="headerlink" title="解决第三个问题的手段"></a>解决第三个问题的手段</h3><ol>
 <li>足够大的内存，减少stop-the-world的压缩</li>
-<li>降低从新生代提升到老生代的速率<br>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过<blockquote>
+<li>降低从新生代提升到老生代的速率</li>
+</ol>
+<p>-XX:SurvivorRatio=8 参数调整<br>在保持新生代大小不变的情况下，增加survivor的大小  -&gt; eden 变小 —&gt; minor gc 变的频繁，那么在满足minor gc的要求下，那么必须保持eden不变，增大整个新生代。<br>增大survivor会加长对象在新生代的时间，但是会加快minor gc的频率<br>晋升阀值的计算依据于每次minor gc后存活的对象同目标survivor空间占用的空间大小。<br>具体通过</p>
+<blockquote>
 <p>-XX:+PrintTenuringDistribution  打印对象的年龄<br>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>- age   1:    6792744 bytes,    6792744 total<br>- age   2:    2366824 bytes,    9159568 total<br>- age   3:    1924344 bytes,   11083912 total</p>
 </blockquote>
-</li>
-</ol>
 <p>内部计算的晋升阀值是：1.<br>最大晋升阀值是4，第一次  阀值是通过-XX:MaxTenuringThreshold=n来设置的。在JDK1.6.6版本后，范围是在1~15之间。JDK5中范围是1~31.<br>survivor的空间大小乘以目标存活率得到的大小：6291456<br>目标存活率是：预计空间目标在survivor空间中占有的百分比。JVM在GC之后忍让维持的survivor空间占用，通过-XX:TargetsurivorRatio=50来设置，默认是50，这个数值是经过大量的测试得出的，一般不需要修改。<br>当survivor空间的使用小于或是等于JVM期望维护的数值时，会将最大晋升阀值作为计算的晋升阀值。若是JVM觉得无法维持survivor空间的占有时候，会使用一个低于最大晋升阀值的数值来保证survivor空间的占用。<br>当存活的对象大小大于survivor空间的时候，会加速提升对象到老生代的速度。<br>看两个例子:</p>
 <blockquote>
 <p>2014-04-18T18:23:38.843+0800: 67.444: [GC 67.444: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 1 (max 4)<br>- age   1:    6792744 bytes,    6792744 total<br>- age   2:    2366824 bytes,    9159568 total<br>- age   3:    1924344 bytes,   11083912 total`</p>
@@ -82,14 +103,20 @@
 <blockquote>
 <p>2014-04-18T18:43:50.378+0800: 1278.979: [GC 1278.980: [ParNew<br>Desired survivor size 6291456 bytes, new threshold 4 (max 4)<br>- age   1:      72032 bytes,      72032 total<br>- age   2:       1408 bytes,      73440 total<br>- age   3:       1352 bytes,      74792 total</p>
 </blockquote>
-<p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于<br>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset<br>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
-<p>持久代的回收<br>-XX:+CMSPermGenSweepingEnabled<br>-XX:CMSInitiatingPermOccupancyFraction<br>-XX:+CMSClassUnloadingEnabled<br>-XX:+CMSParallelRemarkEnabled<br>几个参数来设置</p>
+<p>留存的对象大小是74792，小于预计的大小6291456，若是对于晋升的阀值是最大，其实可以加大阀值的数值，将4增大，最大可到15.<br>若是minor gc的持续时间过长，那么就是新生代过大，需要调整下大小。<br>老生代的调优<br>老生代在回收的时候可能会发生并发回收失败，那么因为在回收的时候，有新的数据产生，老生代空间不够来进行回收了。那么可以通过两个参数来进行设置<br>-XX:+UseCMSInitiatingOccupancyOnly 使用手工设置的大小<br>-XX:CMSInitiatingOccupancyFaction  在老生代内存达到多少百分比时候进行回收。这个参数依赖于前面那个参数，若是不设置UseCMSInitiatingOccupancyOnly，只在第一次按照CMSInitiatingOccupancyFaction设置的值来进行回收，第二次还是自我调节的去回收<br>CMSInitiatingOccupancyFaction这个数值的大小必须大于活跃数据的大小，若是活跃数据是350，老生代是1024，那么他们之间的比例是350，那么CMSInitiatingOccupancyFaction必须大于350/1024.<br>CMSInitiatingOccupancyFaction这个值看是否设置合适就在于</p>
+<blockquote>
+<p>cms-initial-mark   stop-world<br>cms-concurrent-mark<br>cms-concurrent-preclean<br>cms-concurrent-abortable-preclean<br>cms-remark         stop-world<br>cms-concurrent-sweep<br>cms-concurrent-reset</p>
+</blockquote>
+<p>这几个阶段之间数值是否变化的不大，若是变化不大的话，那么说明CMSInitiatingOccupancyFaction这个值设置的太小了。<br>若是cms-initial-mark后直接出现full gc，那么说明CMSInitiatingOccupancyFaction设置的太大了。</p>
+<p>持久代的回收</p>
+<blockquote>
+<p>-XX:+CMSPermGenSweepingEnabled<br>-XX:CMSInitiatingPermOccupancyFraction<br>-XX:+CMSClassUnloadingEnabled<br>-XX:+CMSParallelRemarkEnabled</p>
+</blockquote>
+<p>几个参数来设置</p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<ol>
-<li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</li>
-<li>GC内存最大化原则：堆空间越大、垃圾回收效果越好</li>
-<li>吞吐量、延迟、内存占用，三选二进行调优<h3 id="默认的配置："><a href="#默认的配置：" c]]>
+    <![CDATA[<h2 id="GC调优的一般原则"><a href="#GC调优的一般原则" class="headerlink" title="GC调优的一般原则"></a>GC调优的一般原则</h2><ol>
+<li>minor gc回收原则：每次minor gc尽量多的回收垃圾对象</l]]>
     </summary>
     
       <category term="java" scheme="http://yoursite.com/tags/java/"/>
