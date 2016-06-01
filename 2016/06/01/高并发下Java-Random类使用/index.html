@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Java," />
+  <meta name="keywords" content="Java,高并发," />
 
 
 
@@ -94,7 +94,7 @@
 <meta property="og:site_name" content="码农的耕地">
 <meta property="og:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
 而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
-<meta property="og:updated_time" content="2016-06-01T13:12:33.000Z">
+<meta property="og:updated_time" content="2016-06-01T13:15:30.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="高并发下Java Random类使用">
 <meta name="twitter:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
@@ -290,7 +290,10 @@
 <li>在高并发时，不要使用Math.random生成随机数</li>
 <li>Java1.7开始，使用ThreadLocalRandom类代替</li>
 </ul>
-<p>用了会怎样？<br>如果你很好奇，那么我只能告诉你，并发不高时，一切都工作的很好；但并发高了，就像以多线程的方式开启了一堆死循环，会把每一个cpu都跑满！<br>在高并发时，不要共用同一个Random实例？<br>因为在高并发时效率真的是太差了，从jdk1.7开始，Random的javadoc中多了这么一句：<br>&gt;<br>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
+<p>用了会怎样？<br>如果你很好奇，那么我只能告诉你，并发不高时，一切都工作的很好；但并发高了，就像以多线程的方式开启了一堆死循环，会把每一个cpu都跑满！<br>在高并发时，不要共用同一个Random实例？<br>因为在高并发时效率真的是太差了，从jdk1.7开始，Random的javadoc中多了这么一句：</p>
+<blockquote>
+<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
+</blockquote>
 <p>看看源码，事实上Random.nextXXX方法都调用了Random.next方法，那么我们看看这个方法，就能找到答案：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">next</span><span class="params">(<span class="keyword">int</span> bits)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> oldseed, nextseed;</span><br><span class="line">    AtomicLong seed = <span class="keyword">this</span>.seed;</span><br><span class="line">    do &#123;</span><br><span class="line">        oldseed = seed.get();</span><br><span class="line">        nextseed = (oldseed * multiplier + addend) &amp; mask;</span><br><span class="line">    &#125; <span class="keyword">while</span> (!seed.compareAndSet(oldseed, nextseed)); <span class="comment">// 就是这里的，高并发时几乎每次比较都不相等</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">int</span>)(nextseed &gt;&gt;&gt; (<span class="number">48</span> - bits));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>java.util.Random 从Java1.0开始就存在了。它是一个线程安全类，理论上可以通过它同时在多个线程中获得互不相同的随机数。这样的线程安全是通过AtomicLong实现的。<br>Random 使用 AtomicLong CAS （compare-and-set）操作来更新它的seed，尽管很多非阻塞式算法中使用了非阻塞式原语，CAS在资源高度竞争时的表现依然糟糕。<br>在高并发时，不要使用Math.random生成随机数<br>原因是Math.random方法实际上使用了同一个Random实例！恰恰就是上面的情况。看看Math干了什么：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomNumberGeneratorHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Random randomNumberGenerator = <span class="keyword">new</span> Random(); <span class="comment">// 初始化一个共用的Random实例</span></span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">random</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> RandomNumberGeneratorHolder.randomNumberGenerator.nextDouble(); <span class="comment">// 使用共用的Random实例</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>解决方案</p>
@@ -321,6 +324,8 @@
         <div class="post-tags">
           
             <a href="/tags/Java/" rel="tag">#Java</a>
+          
+            <a href="/tags/高并发/" rel="tag">#高并发</a>
           
         </div>
       
@@ -417,7 +422,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
