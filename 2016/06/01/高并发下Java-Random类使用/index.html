@@ -68,10 +68,12 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Java," />
 
 
 
+
+  
 
 
   <link rel="alternate" href="/atom.xml" title="码农的耕地" type="application/atom+xml" />
@@ -86,15 +88,28 @@
 
 
 
-<meta name="description" content="Java | Scala | Spark | Hadoop">
-<meta property="og:type" content="website">
-<meta property="og:title" content="码农的耕地">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：
+
+System.out.println(“”.split(“,”).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
+
+而今天的主角是Random类（java.util.Random）。先声明，这是个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高并发下Java Random类使用">
+<meta property="og:url" content="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="Java | Scala | Spark | Hadoop">
+<meta property="og:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：
+
+System.out.println(“”.split(“,”).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
+
+而今天的主角是Random类（java.util.Random）。先声明，这是个">
+<meta property="og:updated_time" content="2016-06-01T13:04:37.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="码农的耕地">
-<meta name="twitter:description" content="Java | Scala | Spark | Hadoop">
+<meta name="twitter:title" content="高并发下Java Random类使用">
+<meta name="twitter:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：
+
+System.out.println(“”.split(“,”).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
+
+而今天的主角是Random类（java.util.Random）。先声明，这是个">
 
 
 
@@ -112,7 +127,7 @@
   };
 </script>
 
-  <title> 码农的耕地 </title>
+  <title> 高并发下Java Random类使用 | 码农的耕地 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +148,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +225,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +247,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/06/01/高并发下Java-Random类使用/" itemprop="url">
-                  高并发下Java Random类使用
-                </a>
+                高并发下Java Random类使用
               
             
           </h1>
@@ -284,355 +294,89 @@
       
 
       
-        
-          <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：</p>
+        <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：</p>
 <blockquote>
 <p>System.out.println(“”.split(“,”).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</p>
 </blockquote>
-<p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/06/01/高并发下Java-Random类使用/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
+<p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br><a id="more"></a></p>
+<p>先说结论</p>
+<ul>
+<li>在高并发时，不要共用同一个Random实例</li>
+<li>在高并发时，不要使用Math.random生成随机数</li>
+<li>Java1.7开始，使用ThreadLocalRandom类代替</li>
+</ul>
+<p>用了会怎样？</p>
+<p>如果你很好奇，那么我只能告诉你，并发不高时，一切都工作的很好；但并发高了，就像以多线程的方式开启了一堆死循环，会把每一个cpu都跑满！<br>在高并发时，不要共用同一个Random实例？<br>因为在高并发时效率真的是太差了，从jdk1.7开始，Random的javadoc中多了这么一句：<br>&gt;<br>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
+<p>看看源码，事实上Random.nextXXX方法都调用了Random.next方法，那么我们看看这个方法，就能找到答案：</p>
+<blockquote>
+<p>protected int next(int bits) {<br>    long oldseed, nextseed;<br>    AtomicLong seed = this.seed;<br>    do {<br>        oldseed = seed.get();<br>        nextseed = (oldseed * multiplier + addend) &amp; mask;<br>    } while (!seed.compareAndSet(oldseed, nextseed)); // 就是这里的，高并发时几乎每次比较都不相等<br>    return (int)(nextseed &gt;&gt;&gt; (48 - bits));<br>}</p>
+</blockquote>
+<p>java.util.Random 从Java1.0开始就存在了。它是一个线程安全类，理论上可以通过它同时在多个线程中获得互不相同的随机数。这样的线程安全是通过AtomicLong实现的。<br>Random 使用 AtomicLong CAS （compare-and-set）操作来更新它的seed，尽管很多非阻塞式算法中使用了非阻塞式原语，CAS在资源高度竞争时的表现依然糟糕。<br>在高并发时，不要使用Math.random生成随机数<br>原因是Math.random方法实际上使用了同一个Random实例！恰恰就是上面的情况。看看Math干了什么：</p>
+<blockquote>
+<p>private static final class RandomNumberGeneratorHolder {<br>    static final Random randomNumberGenerator = new Random(); // 初始化一个共用的Random实例<br>}<br>…<br>public static double random() {<br>    return RandomNumberGeneratorHolder.randomNumberGenerator.nextDouble(); // 使用共用的Random实例<br>}</p>
+</blockquote>
+<p>解决方案</p>
+<blockquote>
+<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
+</blockquote>
+<p>在Java1.7开始，使用ThreadLocalRandom类代替。这个类实际上使得同一个线程使用同一个Random实例，而不同的线程使用不同的Random实例。使用方法：</p>
+<blockquote>
+<p>ThreadLocalRandom.current().nextXXX(); /// XXX代表可选的类型，例如Int</p>
+</blockquote>
+<p>如果不幸的你还在用老版本的Java（默哀…），那么使用ThreadLocal+Random实现一个类似功能的类；或者每次使用时new一个Random（这个又慢又浪费）吧。</p>
+
+      
+    </div>
+
+    <div>
+      
         
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/31/JVM优化的几个原则/" itemprop="url">
-                  JVM优化的几个原则
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T12:34:33+08:00" content="2016-05-31">
-              2016-05-31
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/31/JVM优化的几个原则/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/JVM优化的几个原则/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/Java/" rel="tag">#Java</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <p>本文通过GC日志分析总结JVM优化的一般规则<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/31/JVM优化的几个原则/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/31/JVM优化的几个原则/" rel="next" title="JVM优化的几个原则">
+                <i class="fa fa-chevron-left"></i> JVM优化的几个原则
+              </a>
+            
           </div>
-        
-      
-    </div>
 
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+          <div class="post-nav-prev post-nav-item">
             
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/31/性能定位整体思路/" itemprop="url">
-                  性能定位整体思路
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T00:13:08+08:00" content="2016-05-31">
-              2016-05-31
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/31/性能定位整体思路/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/性能定位整体思路/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/31/性能定位整体思路/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-      
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/30/ELK构建日志搜索服/" itemprop="url">
-                  ELK构建日志搜索服务
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-30T17:59:02+08:00" content="2016-05-30">
-              2016-05-30
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/30/ELK构建日志搜索服/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/30/ELK构建日志搜索服/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>ELK搭建日志搜索服务的整体架构分析<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/30/ELK构建日志搜索服/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
+    <div class="post-spread">
       
     </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
@@ -640,6 +384,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/06/01/高并发下Java-Random类使用/"
+           data-title="高并发下Java Random类使用" data-url="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -659,8 +411,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.png"
@@ -710,6 +471,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <p class="post-toc-empty">此文章未包含目录</p>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -806,6 +578,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
