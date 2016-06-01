@@ -285,8 +285,7 @@
 
       
         
-          <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：</p>
-<p><code>System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</code></p>
+          <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">""</span>.split(<span class="string">","</span>).length); <span class="comment">// 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</span></span><br></pre></td></tr></table></figure></p>
 <p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/06/01/高并发下Java-Random类使用/#more" rel="contents">
