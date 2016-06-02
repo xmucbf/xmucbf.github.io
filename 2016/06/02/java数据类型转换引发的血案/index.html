@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Java,高并发," />
+  <meta name="keywords" content="-java," />
 
 
 
@@ -86,19 +86,16 @@
 
 
 
-<meta name="description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
+<meta name="description" content="问题的起因数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="高并发下Java Random类使用">
-<meta property="og:url" content="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/index.html">
+<meta property="og:title" content="java数据类型转换引发的血案">
+<meta property="og:url" content="http://yoursite.com/2016/06/02/java数据类型转换引发的血案/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
-<meta property="og:updated_time" content="2016-06-01T13:15:30.000Z">
+<meta property="og:description" content="问题的起因数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。">
+<meta property="og:updated_time" content="2016-06-02T15:24:04.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="高并发下Java Random类使用">
-<meta name="twitter:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
+<meta name="twitter:title" content="java数据类型转换引发的血案">
+<meta name="twitter:description" content="问题的起因数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。">
 
 
 
@@ -116,7 +113,7 @@
   };
 </script>
 
-  <title> 高并发下Java Random类使用 | 码农的耕地 </title>
+  <title> java数据类型转换引发的血案 | 码农的耕地 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -236,7 +233,7 @@
             
             
               
-                高并发下Java Random类使用
+                java数据类型转换引发的血案
               
             
           </h1>
@@ -248,8 +245,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-01T21:00:55+08:00" content="2016-06-01">
-              2016-06-01
+            <time itemprop="dateCreated" datetime="2016-06-02T23:18:19+08:00" content="2016-06-02">
+              2016-06-02
             </time>
           </span>
 
@@ -259,8 +256,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/06/01/高并发下Java-Random类使用/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/01/高并发下Java-Random类使用/" itemprop="commentsCount"></span>
+                <a href="/2016/06/02/java数据类型转换引发的血案/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/02/java数据类型转换引发的血案/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -283,25 +280,12 @@
       
 
       
-        <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">""</span>.split(<span class="string">","</span>).length); <span class="comment">// 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</span></span><br></pre></td></tr></table></figure></p>
-<p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br><a id="more"></a><br>先说结论</p>
-<ul>
-<li>在高并发时，不要共用同一个Random实例</li>
-<li>在高并发时，不要使用Math.random生成随机数</li>
-<li>Java1.7开始，使用ThreadLocalRandom类代替</li>
-</ul>
-<p>用了会怎样？<br>如果你很好奇，那么我只能告诉你，并发不高时，一切都工作的很好；但并发高了，就像以多线程的方式开启了一堆死循环，会把每一个cpu都跑满！<br>在高并发时，不要共用同一个Random实例？<br>因为在高并发时效率真的是太差了，从jdk1.7开始，Random的javadoc中多了这么一句：</p>
-<blockquote>
-<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
-</blockquote>
-<p>看看源码，事实上Random.nextXXX方法都调用了Random.next方法，那么我们看看这个方法，就能找到答案：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">next</span><span class="params">(<span class="keyword">int</span> bits)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> oldseed, nextseed;</span><br><span class="line">    AtomicLong seed = <span class="keyword">this</span>.seed;</span><br><span class="line">    do &#123;</span><br><span class="line">        oldseed = seed.get();</span><br><span class="line">        nextseed = (oldseed * multiplier + addend) &amp; mask;</span><br><span class="line">    &#125; <span class="keyword">while</span> (!seed.compareAndSet(oldseed, nextseed)); <span class="comment">// 就是这里的，高并发时几乎每次比较都不相等</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">int</span>)(nextseed &gt;&gt;&gt; (<span class="number">48</span> - bits));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>java.util.Random 从Java1.0开始就存在了。它是一个线程安全类，理论上可以通过它同时在多个线程中获得互不相同的随机数。这样的线程安全是通过AtomicLong实现的。<br>Random 使用 AtomicLong CAS （compare-and-set）操作来更新它的seed，尽管很多非阻塞式算法中使用了非阻塞式原语，CAS在资源高度竞争时的表现依然糟糕。<br>在高并发时，不要使用Math.random生成随机数<br>原因是Math.random方法实际上使用了同一个Random实例！恰恰就是上面的情况。看看Math干了什么：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomNumberGeneratorHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Random randomNumberGenerator = <span class="keyword">new</span> Random(); <span class="comment">// 初始化一个共用的Random实例</span></span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">random</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> RandomNumberGeneratorHolder.randomNumberGenerator.nextDouble(); <span class="comment">// 使用共用的Random实例</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>解决方案</p>
-<blockquote>
-<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
-</blockquote>
-<p>在Java1.7开始，使用ThreadLocalRandom类代替。这个类实际上使得同一个线程使用同一个Random实例，而不同的线程使用不同的Random实例。使用方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ThreadLocalRandom.current().nextXXX(); <span class="comment">/// XXX代表可选的类型，例如Int</span></span><br></pre></td></tr></table></figure></p>
-<p>如果不幸的你还在用老版本的Java（默哀…），那么使用ThreadLocal+Random实现一个类似功能的类；或者每次使用时new一个Random（这个又慢又浪费）吧。</p>
+        <p>问题的起因<br>数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。<br><a id="more"></a><br>事情的起因是这样的：某一天，线上用户突然反馈说，歌曲的下载链接似乎不起作用，过期时间怎么不对。原意是想要10年后过期，但是结果似乎只有20天左右。<br>相关的代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">generatePresignedUrlRequest.setExpiration(<span class="keyword">new</span> Date(System.currentTimeMillis()+<span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>));</span><br></pre></td></tr></table></figure></p>
+<p>也就是说想设置的过期时间是，当前时间后的10年，具体的值：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.currentTimeMillis()+<span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span></span><br></pre></td></tr></table></figure></p>
+<p>细看这段代码，就一个简单的数值计算，不太可能出问题。但是写一段简单的代码验证一下，问题原因就显露出来了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> currentTime = System.currentTimeMillis();</span><br><span class="line">System.out.println(currentTime);</span><br><span class="line"><span class="keyword">long</span> expire = currentTime + <span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>;</span><br><span class="line">System.out.println(expire);</span><br><span class="line">System.out.println(expire-currentTime);</span><br></pre></td></tr></table></figure></p>
+<p>输出结果：<br>1440056798539<br>1441884185931<br>1827387392<br>我们预期expire-currentTime应该是315360000000，为什么实际只有1827387392（正好约等于20天的毫秒数），看起来像是溢出了。<br>为什么会这样<br>在java中数据类型转换分为自动转换和强制转换，强制转换比较显而易见，理解上不容易出问题。今天要探讨的是自动类型转换。自动转换不需要用户提前声明，一般是从位数低的类型向位数高的类型转换，转换的优先级如下：<br>低————————————–&gt;高<br>byte,short,char -&gt; int -&gt; long -&gt; float -&gt; double<br>运算中，不同类型的数据先转化为同一类型，然后进行运算。<br>按上面的叙述，System.currentTimeMillis()+10<em>365</em>3600<em>1000</em>24，后面的10<em>365</em>3600<em>1000</em>24不应该被自动转换成long了吗？那样就不会存在溢出问题了。通过上面的代码验证我们可以看到，事情并没有按我们的预期发展。为什么会这样呢？ 问题就出在各运算符是有优先级的，执行运算的时候如此，进行数据类型自动转换时也如此。<br>乘法的运算优先级要高于加法，因此，java会执行完乘法运算后再执行加法运行。而执行乘法运算时，所有的操作数都是int型，因此没有触发自动类型转换，运算的结果自然是int型的。但是，10<em>365</em>3600<em>1000</em>24的结果超过了int型变量的最大值（java中的int是32位的，范围是-2147483684~2147483647），于是乘法操作得到的结果并不是我们预期的大小。因此当再执行加法操作时，虽然乘法的结果数被自动转换成long了，但是由于执行乘法操作时已经溢出，所以最终的结果也就比我们预期的值小很多了。<br>如何解决<br>既然知道了原因，解决起来当然就很简单了，我们可以在乘法运算时进行一次强制类型转换：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.currentTimeMillis()+（<span class="number">10L</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>)</span><br></pre></td></tr></table></figure></p>
+<p>测试一下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> currentTime = System.currentTimeMillis();</span><br><span class="line">System.out.println(currentTime);</span><br><span class="line"><span class="keyword">long</span> expire = currentTime + <span class="number">10L</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>;</span><br><span class="line">System.out.println(expire);</span><br><span class="line">System.out.println(expire-currentTime);</span><br></pre></td></tr></table></figure></p>
+<p>结果如下：<br>1440062994479<br>1755422994479<br>315360000000</p>
 
       
     </div>
@@ -323,9 +307,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Java/" rel="tag">#Java</a>
-          
-            <a href="/tags/高并发/" rel="tag">#高并发</a>
+            <a href="/tags/java/" rel="tag">#-java</a>
           
         </div>
       
@@ -334,17 +316,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/05/31/JVM优化的几个原则/" rel="next" title="JVM优化的几个原则">
-                <i class="fa fa-chevron-left"></i> JVM优化的几个原则
+              <a href="/2016/06/01/高并发下Java-Random类使用/" rel="next" title="高并发下Java Random类使用">
+                <i class="fa fa-chevron-left"></i> 高并发下Java Random类使用
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/06/02/java数据类型转换引发的血案/" rel="prev" title="java数据类型转换引发的血案">
-                java数据类型转换引发的血案 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -370,8 +348,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/06/01/高并发下Java-Random类使用/"
-           data-title="高并发下Java Random类使用" data-url="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/">
+      <div class="ds-thread" data-thread-key="2016/06/02/java数据类型转换引发的血案/"
+           data-title="java数据类型转换引发的血案" data-url="http://yoursite.com/2016/06/02/java数据类型转换引发的血案/">
       </div>
     
   </div>

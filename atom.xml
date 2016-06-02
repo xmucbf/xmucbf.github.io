@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-06-01T13:15:30.000Z</updated>
+  <updated>2016-06-02T15:24:04.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -13,6 +13,28 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[java数据类型转换引发的血案]]></title>
+    <link href="http://yoursite.com/2016/06/02/java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/"/>
+    <id>http://yoursite.com/2016/06/02/java数据类型转换引发的血案/</id>
+    <published>2016-06-02T15:18:19.000Z</published>
+    <updated>2016-06-02T15:24:04.000Z</updated>
+    <content type="html"><![CDATA[<p>问题的起因<br>数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。<br><a id="more"></a><br>事情的起因是这样的：某一天，线上用户突然反馈说，歌曲的下载链接似乎不起作用，过期时间怎么不对。原意是想要10年后过期，但是结果似乎只有20天左右。<br>相关的代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">generatePresignedUrlRequest.setExpiration(<span class="keyword">new</span> Date(System.currentTimeMillis()+<span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>));</span><br></pre></td></tr></table></figure></p>
+<p>也就是说想设置的过期时间是，当前时间后的10年，具体的值：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.currentTimeMillis()+<span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span></span><br></pre></td></tr></table></figure></p>
+<p>细看这段代码，就一个简单的数值计算，不太可能出问题。但是写一段简单的代码验证一下，问题原因就显露出来了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> currentTime = System.currentTimeMillis();</span><br><span class="line">System.out.println(currentTime);</span><br><span class="line"><span class="keyword">long</span> expire = currentTime + <span class="number">10</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>;</span><br><span class="line">System.out.println(expire);</span><br><span class="line">System.out.println(expire-currentTime);</span><br></pre></td></tr></table></figure></p>
+<p>输出结果：<br>1440056798539<br>1441884185931<br>1827387392<br>我们预期expire-currentTime应该是315360000000，为什么实际只有1827387392（正好约等于20天的毫秒数），看起来像是溢出了。<br>为什么会这样<br>在java中数据类型转换分为自动转换和强制转换，强制转换比较显而易见，理解上不容易出问题。今天要探讨的是自动类型转换。自动转换不需要用户提前声明，一般是从位数低的类型向位数高的类型转换，转换的优先级如下：<br>低————————————–&gt;高<br>byte,short,char -&gt; int -&gt; long -&gt; float -&gt; double<br>运算中，不同类型的数据先转化为同一类型，然后进行运算。<br>按上面的叙述，System.currentTimeMillis()+10<em>365</em>3600<em>1000</em>24，后面的10<em>365</em>3600<em>1000</em>24不应该被自动转换成long了吗？那样就不会存在溢出问题了。通过上面的代码验证我们可以看到，事情并没有按我们的预期发展。为什么会这样呢？ 问题就出在各运算符是有优先级的，执行运算的时候如此，进行数据类型自动转换时也如此。<br>乘法的运算优先级要高于加法，因此，java会执行完乘法运算后再执行加法运行。而执行乘法运算时，所有的操作数都是int型，因此没有触发自动类型转换，运算的结果自然是int型的。但是，10<em>365</em>3600<em>1000</em>24的结果超过了int型变量的最大值（java中的int是32位的，范围是-2147483684~2147483647），于是乘法操作得到的结果并不是我们预期的大小。因此当再执行加法操作时，虽然乘法的结果数被自动转换成long了，但是由于执行乘法操作时已经溢出，所以最终的结果也就比我们预期的值小很多了。<br>如何解决<br>既然知道了原因，解决起来当然就很简单了，我们可以在乘法运算时进行一次强制类型转换：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.currentTimeMillis()+（<span class="number">10L</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>)</span><br></pre></td></tr></table></figure></p>
+<p>测试一下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> currentTime = System.currentTimeMillis();</span><br><span class="line">System.out.println(currentTime);</span><br><span class="line"><span class="keyword">long</span> expire = currentTime + <span class="number">10L</span>*<span class="number">365</span>*<span class="number">3600</span>*<span class="number">1000</span>*<span class="number">24</span>;</span><br><span class="line">System.out.println(expire);</span><br><span class="line">System.out.println(expire-currentTime);</span><br></pre></td></tr></table></figure></p>
+<p>结果如下：<br>1440062994479<br>1755422994479<br>315360000000</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>问题的起因<br>数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。<br>]]>
+    
+    </summary>
+    
+      <category term="-java" scheme="http://yoursite.com/tags/java/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[高并发下Java Random类使用]]></title>
