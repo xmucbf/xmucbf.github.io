@@ -1,0 +1,609 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="反作弊," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="码农的耕地" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言互联网产品经常会举行一些活动，数量繁多，形式各异。比如朋友圈集赞送礼，转发微博抽奖，拉新用户送福利，参加活动领取优惠券等等。这些活动，举办方大都有一些明确的目标，比如宣传，拉新，促销等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反作弊实践经验分享">
+<meta property="og:url" content="http://yoursite.com/2016/06/30/反作弊实践经验分享/index.html">
+<meta property="og:site_name" content="码农的耕地">
+<meta property="og:description" content="前言互联网产品经常会举行一些活动，数量繁多，形式各异。比如朋友圈集赞送礼，转发微博抽奖，拉新用户送福利，参加活动领取优惠券等等。这些活动，举办方大都有一些明确的目标，比如宣传，拉新，促销等。">
+<meta property="og:updated_time" content="2016-06-30T15:20:52.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="反作弊实践经验分享">
+<meta name="twitter:description" content="前言互联网产品经常会举行一些活动，数量繁多，形式各异。比如朋友圈集赞送礼，转发微博抽奖，拉新用户送福利，参加活动领取优惠券等等。这些活动，举办方大都有一些明确的目标，比如宣传，拉新，促销等。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 反作弊实践经验分享 | 码农的耕地 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">码农的耕地</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">夕阳下，烟柳树，coding</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                反作弊实践经验分享
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-06-30T23:12:02+08:00" content="2016-06-30">
+              2016-06-30
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/06/30/反作弊实践经验分享/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/30/反作弊实践经验分享/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前言<br>互联网产品经常会举行一些活动，数量繁多，形式各异。比如朋友圈集赞送礼，转发微博抽奖，拉新用户送福利，参加活动领取优惠券等等。这些活动，举办方大都有一些明确的目标，比如宣传，拉新，促销等。<br><a id="more"></a><br>然而在活动具体实施过程中，有一些恶意用户使用各种手段来“作弊”，企图在不遵守活动规则的前提下也实现获利。他们的这种作弊行为，对活动举办方会造成很大损害，不但造成经济损失，也损害了其他正常参加活动用户的利益，可能导致举办方信誉受损，最终导致活动效果大打折扣，活动目标无法实现。其中有一些人还自称为“羊毛客”，目的就是来薅（hāo）羊毛。<br>信息安全部在给大量网易产品提供反作弊服务的过程中，也积累了一些经验。本文就尝试罗列一些常见的作弊方法和作弊资源，再给出一些防御工具和注意事项，供大家参考和讨论。<br>具体一个活动中的作弊用户可能有好几拨，不同团队的作弊水平有高有低，差距还可能很大。基本可以按作弊手段里结合黑产资源的多少，也就是作弊成本高低来区分。对于低水平的作弊用户，用简单的规则和手段封堵某些点就可以了。但是对于作弊手段高明的人，就很难用片面的策略来发现了。那么我们在做防御方案的时候，也需要全面的应对，用系统化的方案来应对。</p>
+<h2 id="1-常见作弊需要的资源"><a href="#1-常见作弊需要的资源" class="headerlink" title="1.  常见作弊需要的资源"></a>1.  常见作弊需要的资源</h2><p>俗话说“知己知彼，百战百胜”，下面我们就先从作弊者的角度来看看有哪些东西可以利用来作弊。</p>
+<h3 id="1-1-帐号"><a href="#1-1-帐号" class="headerlink" title="1.1     帐号"></a>1.1     帐号</h3><p>去某宝上搜一下，各个产品的帐号都有，大量批发还更加便宜。（微博，微信，网易通行证，各种邮箱帐号等等）。直接购买就可以使用（提供帐号密码），省去了注册的流程。</p>
+<h3 id="1-2-IP"><a href="#1-2-IP" class="headerlink" title="1.2.        IP"></a>1.2.        IP</h3><p>某宝上也有大量代理IP出售，价格实惠，甚至还提供包月的服务。当然自己写一些爬虫去收集代理IP也行，更牛的自己掌握一些肉鸡就更方便了。用不同的IP登录不同的帐号是一种比较好的隐藏自己行踪的方法，通常很多产品都会对IP做高频限制（同IP下参与用户数过多）。</p>
+<h3 id="1-3-手机短信验证码"><a href="#1-3-手机短信验证码" class="headerlink" title="1.3.        手机短信验证码"></a>1.3.        手机短信验证码</h3><p>类似51验证码等手机短信验证码平台现在也是难以杜绝。这种平台都有一定的卡商资源，并且平台对使用方式上有一定的包装，一般都有相应的api或者工具包。方便程序自动实现获取手机号以及该手机号收到的验证码。绝对的真实有效，保质保量。价格也是根据量不同有不同优惠。一般情况下收一个验证码6分钱。</p>
+<p>在这些平台上游的卡商，一般是掌握大量手机卡的人，他们可以利用卡猫等设备将手机卡和电脑相连，再用平台给的工具实现平台接入。各种未经实名认证（可能还未出售）的手机号码就能实现接收验证码短信了。</p>
+<h3 id="1-4-打码平台"><a href="#1-4-打码平台" class="headerlink" title="1.4.        打码平台"></a>1.4.        打码平台</h3><p>这个是指人工输入图形验证码。对于简单的验证码，用机器识别即可（成功率相当高），对于复杂度较高的验证码，平台也支持人工打码支持。7*24小时服务，每日结算费用。</p>
+<h3 id="1-5-模拟器"><a href="#1-5-模拟器" class="headerlink" title="1.5.        模拟器"></a>1.5.        模拟器</h3><p>模拟器通常是指安卓的模拟器，安卓模拟器非常强大，种类也很多，基本可以模拟一个真实的手机全部功能。比如BlueStacks等。连GPS信息都可以模拟。</p>
+<h3 id="1-6-专门工具"><a href="#1-6-专门工具" class="headerlink" title="1.6.        专门工具"></a>1.6.        专门工具</h3><p>专门的黑客技术人员会编写有针对性的工具和程序，结合模拟器以及上面提到的各种黑产资源，可以做出一整套自动化的工具。比如现在很多帐号注册机，就支持更换IP，更换手机号码，对接打码平台等功能。据说有这样技术的高端黑客上游，一个可以支撑数十个下游的黑产团队。</p>
+<h2 id="2-一些防御措施和准备工作"><a href="#2-一些防御措施和准备工作" class="headerlink" title="2.         一些防御措施和准备工作"></a>2.         一些防御措施和准备工作</h2><p>前面了解了一些常见作弊可能使用的东西之后，我们再来分析自己能做的事情有哪些。</p>
+<h3 id="2-1-基本原则"><a href="#2-1-基本原则" class="headerlink" title="2.1.        基本原则"></a>2.1.        基本原则</h3><p>既然很多作弊都是程序自动化的行为，那么我们就应该尝试做人机识别。其实人机识别做好了所有问题就解决了，不过人机识别这个概念范围太广了，我们还是从一些具体的目前现成的技术手段来说明。由于作弊手段是多样的，所以防御措施也没有一劳永逸的好事，但是我们可以遵循的一个基本防御原则就是：提升作弊成本。</p>
+<h3 id="2-2-验证码"><a href="#2-2-验证码" class="headerlink" title="2.2.        验证码"></a>2.2.        验证码</h3><p>人机识别里面性价比较高的方案就是验证码，并且最常见的就是数字字母验证码。可以在信息安全的公共技术库中找到验证码工具。普通的数字字母验证码还是有一定的破解率的，需要定期更换样式保证较低的破解率。汉字验证码防机器人效果是不错，不过用户体验不好。一旦有了验证码，他们需要破解就需要额外增加代码服务，提升了作弊成本。同时我们也在研发各种新形势的验证码，比如拖条，拼图，文字点选等等，后续也会补充到公共技术库中供有需要的部门选用。</p>
+<h3 id="2-3-手机短信验证"><a href="#2-3-手机短信验证" class="headerlink" title="2.3.        手机短信验证"></a>2.3.        手机短信验证</h3><p>是手机验证码，虽然有打码平台存在，但是接入也是需要成本，并且是按手机号码个数计费，成本也不低。提升了作弊的成本，羊毛党自然的会去找成本更低，更容易的地方薅羊毛了。</p>
+<h3 id="2-4-设备ID-浏览器指纹"><a href="#2-4-设备ID-浏览器指纹" class="headerlink" title="2.4.        设备ID/浏览器指纹"></a>2.4.        设备ID/浏览器指纹</h3><p>记录移动设备ID，浏览器指纹，做高频限制，统计分析。常见的手机MAC地址，IMEI号等有专门的黑客工具做了破解，所以对于设备ID的生成，传输，存储也需要有更加安全的方案。这里有一个对抗的过程，我们推出一些新的设备ID算法（包括指纹算法），经过一段时间后黑客也可能破解其中一二，然后我们就需要准备升级。目前信息安全部的公共技术库中也已经有成熟的设备ID（支持IOS和安卓）和浏览器指纹的SDK。</p>
+<p>实践证明设备ID和指纹还是非常有效的手段，那种利用手机验证码平台的用户很多都是被设备ID规则拦截下来的。</p>
+<h3 id="2-5-IP规则"><a href="#2-5-IP规则" class="headerlink" title="2.5.        IP规则"></a>2.5.        IP规则</h3><p>IP也是有限的资源，虽然有很多代理售卖，但也是需要成本的。并且IP的概念比较深入人心，用IP做规则，普通用户也容易接受。IP高频限制，作为最最基本的防御措施，还是需要保留的。</p>
+<h3 id="2-6-数据分析"><a href="#2-6-数据分析" class="headerlink" title="2.6.        数据分析"></a>2.6.        数据分析</h3><p>再复杂一点的方案就是数据分析。这个分析分成两个方面，一个方面是分析机器人：收集用户的行为轨迹后分析判断是否真实用户。比如用户的鼠标轨迹，用户各个页面的停留时间等。初期可以直接用简单规则配合判断，比如是否有经过活动设定的页面路径等。另一个方面是分析正常用户：根据用户的历史行为数据分析是否为正常人，从而保护用户免受各种反作弊规则的误判。</p>
+<h3 id="2-7-游戏规则"><a href="#2-7-游戏规则" class="headerlink" title="2.7.        游戏规则"></a>2.7.        游戏规则</h3><p>  很多作弊的人被拦截后会投诉并且质问拦截原因，他们希望了解更多的防御措施再做有针对性的破解。那么一个活动在开始之前，先说明游戏规则就很有必要了。良好的措辞可以避免很多不必要的纠纷。参考支付宝的一个通用活动总则：每次活动中，每个用户只限参加一次活动，每个用户只能中奖一次。同一手机、同一联系方式、同一IP地址、同一支付宝账户、同一身份证件、同一银行卡号、同一收货地址、同一终端设备号或其他可以合理显示为同一用户的情形，均视为同一用户。</p>
+<p>  我们先把丑话说在前头，当有用户投诉的时候，告诉他们违反了活动规则即可。至于具体的判断依据，可以说是有合理情形判断为同一用户。记住：活动规则很重要。但这里并不是说把这些活动细则一下子全展现给用户。而是加一些链接到更加详细的规则说明页面去。支付宝，京东都是这么做的。</p>
+<h3 id="2-8-延时发奖"><a href="#2-8-延时发奖" class="headerlink" title="2.8.        延时发奖"></a>2.8.        延时发奖</h3><p>  建议各种奖励都不要立刻结算，一方面对反作弊的工作压力很大，另外一方面对于作弊的人也容易试探规则，只要看是否领奖成功即可。因为上述各种反作弊的措施，都需要一定的时间来完成，时间上给予一些宽裕，方便反作弊工作的实施，也可以实现更加精确的打击。比如有一些作弊者在一台新机器上第一次使用，设备ID也还是全新的，如果是实时判断的话可能就无法识别，但如果累计了一天后再看，就可以发现这个设备ID下聚集了大量帐号。敌明我暗，成功率就高了很多。</p>
+<h3 id="2-9-抽奖"><a href="#2-9-抽奖" class="headerlink" title="2.9.        抽奖"></a>2.9.        抽奖</h3><p>  抽奖是一个减少投诉的好方法，但可能对用户吸引力稍弱一些。但是对于被反作弊拦截的用户，全部都可以用抽奖没抽到为理由回复用户，客服压力会小很多。</p>
+<h3 id="2-10-客服准备"><a href="#2-10-客服准备" class="headerlink" title="2.10.     客服准备"></a>2.10.     客服准备</h3><p>  这里指的是客服和活动策划，反作弊人员之间的前期沟通交流和规范制定。比如规则的保密性，应对投诉的说法等。并且反作弊也不能做到100%精确，有可能存在误伤了真实用户，对于投诉过来的，可以及时反查用户情况，误伤的尽量给予补偿。并且根据误伤情况反馈，更新防御规则。</p>
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3.         总结"></a>3.         总结</h2><p>  反作弊是一个对抗的过程，本质就是作弊和防御成本的较量。我们想完全抓出每一个作弊的用户是非常困难的，我们能做的只有不断抬高作弊成本，至少比其他产品活动成本要高，作弊用户自然就不会骚扰你的产品了。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/反作弊/" rel="tag">#反作弊</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/06/02/java数据类型转换引发的血案/" rel="next" title="java数据类型转换引发的血案">
+                <i class="fa fa-chevron-left"></i> java数据类型转换引发的血案
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/06/30/反作弊实践经验分享/"
+           data-title="反作弊实践经验分享" data-url="http://yoursite.com/2016/06/30/反作弊实践经验分享/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="cbf" />
+          <p class="site-author-name" itemprop="name">cbf</p>
+          <p class="site-description motion-element" itemprop="description">Java | Scala | Spark | Hadoop</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-常见作弊需要的资源"><span class="nav-number">1.</span> <span class="nav-text">1.  常见作弊需要的资源</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-帐号"><span class="nav-number">1.1.</span> <span class="nav-text">1.1     帐号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-IP"><span class="nav-number">1.2.</span> <span class="nav-text">1.2.        IP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-手机短信验证码"><span class="nav-number">1.3.</span> <span class="nav-text">1.3.        手机短信验证码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-打码平台"><span class="nav-number">1.4.</span> <span class="nav-text">1.4.        打码平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-模拟器"><span class="nav-number">1.5.</span> <span class="nav-text">1.5.        模拟器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-专门工具"><span class="nav-number">1.6.</span> <span class="nav-text">1.6.        专门工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-一些防御措施和准备工作"><span class="nav-number">2.</span> <span class="nav-text">2.         一些防御措施和准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-基本原则"><span class="nav-number">2.1.</span> <span class="nav-text">2.1.        基本原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-验证码"><span class="nav-number">2.2.</span> <span class="nav-text">2.2.        验证码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-手机短信验证"><span class="nav-number">2.3.</span> <span class="nav-text">2.3.        手机短信验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-设备ID-浏览器指纹"><span class="nav-number">2.4.</span> <span class="nav-text">2.4.        设备ID/浏览器指纹</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-IP规则"><span class="nav-number">2.5.</span> <span class="nav-text">2.5.        IP规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-数据分析"><span class="nav-number">2.6.</span> <span class="nav-text">2.6.        数据分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-游戏规则"><span class="nav-number">2.7.</span> <span class="nav-text">2.7.        游戏规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-延时发奖"><span class="nav-number">2.8.</span> <span class="nav-text">2.8.        延时发奖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-抽奖"><span class="nav-number">2.9.</span> <span class="nav-text">2.9.        抽奖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-10-客服准备"><span class="nav-number">2.10.</span> <span class="nav-text">2.10.     客服准备</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-总结"><span class="nav-number">3.</span> <span class="nav-text">3.         总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cbf</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"cbf"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
