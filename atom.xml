@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-10-18T04:44:47.000Z</updated>
+  <updated>2016-10-18T04:47:37.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,8 +19,9 @@
     <link href="http://yoursite.com/2016/09/30/memcached-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     <id>http://yoursite.com/2016/09/30/memcached-内存管理/</id>
     <published>2016-09-30T15:29:17.000Z</published>
-    <updated>2016-10-18T04:44:47.000Z</updated>
-    <content type="html"><![CDATA[<h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
+    <updated>2016-10-18T04:47:37.000Z</updated>
+    <content type="html"><![CDATA[<p>\&lt;!– more –></p>
+<h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
 <h3 id="2-Memcached模型"><a href="#2-Memcached模型" class="headerlink" title="2.Memcached模型"></a>2.Memcached模型</h3><p>在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memcached内存管理的重要概念。<br>1.Slab<br>Slab是Memcached中分配的一块内存，默认大小是1M。Slab是Memcached内存分配的最小单位。<br>2.Chunk<br>Slab是Memcached中分配的最小单位，而每一个Slab又会进一步划分成一个个的Chunk。Chunk是Memcached存储数据的最小单元，一个Chunk只能存储一个对象。同时，一个Slab中所有的Chunk的大小是相同的。<br>3.Item<br>Item是Memcached中存储的实际数据。Item本身是一个复杂的数据结构，其中除了包含对象的Key-Value键值对，过期时间外，还有其他一些数据结构，稍后会具体介绍。Memcached将Item保存对应的Slab的某个Chunk中。<br>4.SlabClass<br>通过上面几个概念的介绍，我们知道Memcached通过分配Slab并把Slab划分成等大小的Chunk来进行存储。那么不同的Item大小数据应该如何存储呢？SlabClass把Slab划分成不同大小的组合，每一个SlabClass对应一种Slab，在同一个SlabClass中所有的Slab都划分成相同大小的Chunk。</p>
 <p>这里举一个还算比较形象的列子。Memcached的内存分配可以类比与我们上学时代的写字本。Slab相当于写字本的一页，Chunk相当于写字本一页中的一个个写字格子，Item相当于我们要写的字，而SlabClass相当于一个写字本。所以每一个写字本中的格子大小都是相同的，我们要写不同的字，只需要找最符合该字大小的写字本就可以了。</p>
 <h3 id="3-Memecached数据结构"><a href="#3-Memecached数据结构" class="headerlink" title="3. Memecached数据结构"></a>3. Memecached数据结构</h3><p>Memcached中最为基本的数据结构是slabclass_t，该数据结构记录了memcached中单个slabclass的结构，具体的数据结构源码如下：<br>    typedef struct {<br>    unsigned int size;      /<em> Chunk的大小，固定不变 </em>/<br>    unsigned int perslab;   /<em> 每一个slab中可以存储对象的数量  </em>/</p>
@@ -222,8 +223,23 @@ do_slabs_free_chunked(it, size, id, p);
 }
 return;
 }
-</code></pre><p>所以memcached每申请一个新的slab，都会把该slab进行item化的划分，并使用链表来记录。到此为止，所有的Memcached的内存都已经初始化了，结果是建立了所有slabclass的数组和每个slabclass中的数量（默认是16个），每个slabclass中的大小固定，每个slab中的数量固定，并初始化了一个Slab中的所有空闲Item。而所有的item在一个slot中是采用链表来记录的，数据结构为slots，这个是垮slab，所有的slab中的item都可以找到，并且是顺序存储的。<br>介绍了上面的slab的分配，下面重点介绍Item是如何获取内存的，可以该方法是Memcached内存分配的最核心入口，代码如下：<br>    item <em>do_item_alloc(char </em>key, const size_t nkey, const unsigned int flags,<br>    const rel_time_t exptime, const int nbytes) {<br>    int i;<br>    uint8_t nsuffix;<br>    item *it = NULL;<br>    char suffix[40];<br>    size_t ntotal = item_make_header(nkey + 1, flags, nbytes, suffix, &amp;nsuffix);<br>    if (settings.use_cas) {<br>    ntotal += sizeof(uint64_t);<br>    }<br>            //根据存储的总大小判断存储的slabclass，slabclass从1开始<br>    unsigned int id = slabs_clsid(ntotal);<br>    if (id == 0)<br>    return 0;</p>
-<pre><code>/* If no memory is available, attempt a direct LRU juggle/eviction */
+</code></pre><p>所以memcached每申请一个新的slab，都会把该slab进行item化的划分，并使用链表来记录。到此为止，所有的Memcached的内存都已经初始化了，结果是建立了所有slabclass的数组和每个slabclass中的数量（默认是16个），每个slabclass中的大小固定，每个slab中的数量固定，并初始化了一个Slab中的所有空闲Item。而所有的item在一个slot中是采用链表来记录的，数据结构为slots，这个是垮slab，所有的slab中的item都可以找到，并且是顺序存储的。<br>介绍了上面的slab的分配，下面重点介绍Item是如何获取内存的，可以该方法是Memcached内存分配的最核心入口，代码如下： </p>
+<pre><code>item *do_item_alloc(char *key, const size_t nkey, const unsigned int flags,
+const rel_time_t exptime, const int nbytes) {
+int i;
+uint8_t nsuffix;
+item *it = NULL;
+char suffix[40];
+size_t ntotal = item_make_header(nkey + 1, flags, nbytes, suffix, &amp;nsuffix);
+if (settings.use_cas) {
+ntotal += sizeof(uint64_t);
+}
+        //根据存储的总大小判断存储的slabclass，slabclass从1开始
+unsigned int id = slabs_clsid(ntotal);
+if (id == 0)
+return 0;
+
+/* If no memory is available, attempt a direct LRU juggle/eviction */
 /* This is a race in order to simplify lru_pull_tail; in cases where
 locked items are on the tail, you want them to fall out and cause
     occasional OOM&apos;s, rather than internally work around them.
@@ -316,8 +332,16 @@ it-&gt;h_next = 0;
 
 return it;
 }
-</code></pre><p>从这段代码中，item内存的分配是先进行LRU的判断，释放LRU中过期的Item，然后通过slab_alloc来进行分配，如果还没有足够的内存，继续进行LRU内存的释放（这次可以通过抛弃还未过期的最近最少使用的对象）。我们先看看lru_pull_tail的实现：<br>    static int lru_pull_tail(const int orig_id, const int cur_lru,<br>    const uint64_t total_bytes, uint8_t flags) {<br>    item *it = NULL;<br>    int id = orig_id;<br>    int removed = 0;<br>    if (id == 0)<br>    return 0;</p>
-<pre><code>int tries = 5;
+</code></pre><p>从这段代码中，item内存的分配是先进行LRU的判断，释放LRU中过期的Item，然后通过slab_alloc来进行分配，如果还没有足够的内存，继续进行LRU内存的释放（这次可以通过抛弃还未过期的最近最少使用的对象）。我们先看看lru_pull_tail的实现：</p>
+<pre><code>static int lru_pull_tail(const int orig_id, const int cur_lru,
+const uint64_t total_bytes, uint8_t flags) {
+item *it = NULL;
+int id = orig_id;
+int removed = 0;
+if (id == 0)
+return 0;
+
+int tries = 5;
 item *search;
 item *next_it;
 void *hold_lock = NULL;
@@ -461,7 +485,8 @@ return removed;
 </code></pre><p>​<br>​<br>​</p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统]]>
+    <![CDATA[<p>\&lt;!– more –></p>
+<h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ M]]>
     </summary>
     
   </entry>
