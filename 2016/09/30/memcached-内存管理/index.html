@@ -73,6 +73,8 @@
 
 
 
+  
+
 
   <link rel="alternate" href="/atom.xml" title="码农的耕地" type="application/atom+xml" />
 
@@ -86,15 +88,21 @@
 
 
 
-<meta name="description" content="Java | Scala | Spark | Hadoop">
-<meta property="og:type" content="website">
-<meta property="og:title" content="码农的耕地">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="1.Memcached介绍​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。
+2.Memcached模型在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="memcached 内存管理">
+<meta property="og:url" content="http://yoursite.com/2016/09/30/memcached-内存管理/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="Java | Scala | Spark | Hadoop">
+<meta property="og:description" content="1.Memcached介绍​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。
+2.Memcached模型在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memc">
+<meta property="og:image" content="http://yoursite.com/2016/09/30/memcached-内存管理/1.png">
+<meta property="og:updated_time" content="2016-10-18T03:00:57.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="码农的耕地">
-<meta name="twitter:description" content="Java | Scala | Spark | Hadoop">
+<meta name="twitter:title" content="memcached 内存管理">
+<meta name="twitter:description" content="1.Memcached介绍​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。
+2.Memcached模型在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memc">
+<meta name="twitter:image" content="http://yoursite.com/2016/09/30/memcached-内存管理/1.png">
 
 
 
@@ -112,7 +120,7 @@
   };
 </script>
 
-  <title> 码农的耕地 </title>
+  <title> memcached 内存管理 | 码农的耕地 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +141,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +218,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +240,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/09/30/memcached-内存管理/" itemprop="url">
-                  memcached 内存管理
-                </a>
+                memcached 内存管理
               
             
           </h1>
@@ -284,9 +287,7 @@
       
 
       
-        
-          
-            <h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
+        <h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
 <h3 id="2-Memcached模型"><a href="#2-Memcached模型" class="headerlink" title="2.Memcached模型"></a>2.Memcached模型</h3><p>在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memcached内存管理的重要概念。<br>1.Slab<br>Slab是Memcached中分配的一块内存，默认大小是1M。Slab是Memcached内存分配的最小单位。<br>2.Chunk<br>Slab是Memcached中分配的最小单位，而每一个Slab又会进一步划分成一个个的Chunk。Chunk是Memcached存储数据的最小单元，一个Chunk只能存储一个对象。同时，一个Slab中所有的Chunk的大小是相同的。<br>3.Item<br>Item是Memcached中存储的实际数据。Item本身是一个复杂的数据结构，其中除了包含对象的Key-Value键值对，过期时间外，还有其他一些数据结构，稍后会具体介绍。Memcached将Item保存对应的Slab的某个Chunk中。<br>4.SlabClass<br>通过上面几个概念的介绍，我们知道Memcached通过分配Slab并把Slab划分成等大小的Chunk来进行存储。那么不同的Item大小数据应该如何存储呢？SlabClass把Slab划分成不同大小的组合，每一个SlabClass对应一种Slab，在同一个SlabClass中所有的Slab都划分成相同大小的Chunk。</p>
 <p>这里举一个还算比较形象的列子。Memcached的内存分配可以类比与我们上学时代的写字本。Slab相当于写字本的一页，Chunk相当于写字本一页中的一个个写字格子，Item相当于我们要写的字，而SlabClass相当于一个写字本。所以每一个写字本中的格子大小都是相同的，我们要写不同的字，只需要找最符合该字大小的写字本就可以了。</p>
 <h3 id="3-Memecached数据结构"><a href="#3-Memecached数据结构" class="headerlink" title="3. Memecached数据结构"></a>3. Memecached数据结构</h3><p>Memcached中最为基本的数据结构是slabclass_t，该数据结构记录了memcached中单个slabclass的结构，具体的数据结构源码如下：</p>
@@ -365,16 +366,19 @@ slabs_preallocate(power_largest);
 <pre><code>/* Returns number of items remove, expired, or evicted. * Callable from worker threads or the LRU maintainer thread */ static int lru_pull_tail(const int orig_id, const int cur_lru, const unsigned int total_chunks, const bool do_evict, const uint32_t cur_hv) { item *it = NULL; int id = orig_id; int removed = 0; if (id == 0) return 0; int tries = 5; item *search; item *next_it; void *hold_lock = NULL; unsigned int move_to_lru = 0; uint64_t limit; id |= cur_lru; pthread_mutex_lock(&amp;lru_locks[id]); search = tails[id]; /* We walk up *only* for locked items, and if bottom is expired. */ for (; tries &gt; 0 &amp;&amp; search != NULL; tries--, search=next_it) { /* we might relink search mid-loop, so search-&gt;prev isn&apos;t reliable */ next_it = search-&gt;prev; if (search-&gt;nbytes == 0 &amp;&amp; search-&gt;nkey == 0 &amp;&amp; search-&gt;it_flags == 1) { /* We are a crawler, ignore it. */ tries++; continue; } uint32_t hv = hash(ITEM_key(search), search-&gt;nkey); /* 尝试lock search item，如果失败，则跳过 * Attempt to hash item lock the &quot;search&quot; item. If locked, no * other callers can incr the refcount. Also skip ourselves. */ if (hv == cur_hv || (hold_lock = item_trylock(hv)) == NULL) continue; /* Now see if the item is refcount locked */ if (refcount_incr(&amp;search-&gt;refcount) != 2) { /* Note pathological case with ref&apos;ed items in tail. * Can still unlink the item, but it won&apos;t be reusable yet */ itemstats[id].lrutail_reflocked++; /* In case of refcount leaks, enable for quick workaround. */ /* WARNING: This can cause terrible corruption */ if (settings.tail_repair_time &amp;&amp; search-&gt;time + settings.tail_repair_time &lt; current_time) { itemstats[id].tailrepairs++; search-&gt;refcount = 1; /* refcount为1的会进行回收释放处理*/ do_item_unlink_nolock(search, hv); item_trylock_unlock(hold_lock); continue; } } /* Expired or flushed */ if ((search-&gt;exptime != 0 &amp;&amp; search-&gt;exptime &lt; current_time) || is_flushed(search)) { itemstats[id].reclaimed++; if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) { itemstats[id].expired_unfetched++; } /* refcnt 2 -&gt; 1 */ do_item_unlink_nolock(search, hv); /* refcnt 1 -&gt; 0 -&gt; item_free */ do_item_remove(search); item_trylock_unlock(hold_lock); removed++; /* If all we&apos;re finding are expired, can keep going */ continue; } /* If we&apos;re HOT_LRU or WARM_LRU and over size limit, send to COLD_LRU. * If we&apos;re COLD_LRU, send to WARM_LRU unless we need to evict */ switch (cur_lru) { case HOT_LRU: limit = total_chunks * settings.hot_lru_pct / 100; case WARM_LRU: limit = total_chunks * settings.warm_lru_pct / 100; if (sizes[id] &gt; limit) { itemstats[id].moves_to_cold++; move_to_lru = COLD_LRU; do_item_unlink_q(search); it = search; removed++; break; } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0) { /* Only allow ACTIVE relinking if we&apos;re not too large. */ itemstats[id].moves_within_lru++; search-&gt;it_flags &amp;= ITEM_ACTIVE; do_item_update_nolock(search); do_item_remove(search); item_trylock_unlock(hold_lock); } else { /* Don&apos;t want to move to COLD, not active, bail out */ it = search; } break; case COLD_LRU: it = search; /* No matter what, we&apos;re stopping */ if (do_evict) { if (settings.evict_to_free == 0) { /* Don&apos;t think we need a counter for this. It&apos;ll OOM. */ break; } itemstats[id].evicted++; itemstats[id].evicted_time = current_time - search-&gt;time; if (search-&gt;exptime != 0) itemstats[id].evicted_nonzero++; if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) { itemstats[id].evicted_unfetched++; } do_item_unlink_nolock(search, hv); removed++; } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0 &amp;&amp; settings.lru_maintainer_thread) { itemstats[id].moves_to_warm++; search-&gt;it_flags &amp;= ITEM_ACTIVE; move_to_lru = WARM_LRU; do_item_unlink_q(search); removed++; } break; } if (it != NULL) break; } pthread_mutex_unlock(&amp;lru_locks[id]); if (it != NULL) { if (move_to_lru) { it-&gt;slabs_clsid = ITEM_clsid(it); it-&gt;slabs_clsid |= move_to_lru; item_link_q(it); } do_item_remove(it); item_trylock_unlock(hold_lock); } return removed; }
 </code></pre><p>​<br>​<br>​</p>
 
-          
+      
+    </div>
+
+    <div>
+      
         
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
@@ -382,638 +386,32 @@ slabs_preallocate(power_largest);
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
+              <a href="/2016/06/30/反作弊实践经验分享/" rel="next" title="反作弊实践经验分享">
+                <i class="fa fa-chevron-left"></i> 反作弊实践经验分享
+              </a>
             
-              
-                
-                <a class="post-title-link" href="/2016/06/30/反作弊实践经验分享/" itemprop="url">
-                  反作弊实践经验分享
-                </a>
-              
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
             
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-30T23:12:02+08:00" content="2016-06-30">
-              2016-06-30
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/06/30/反作弊实践经验分享/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/30/反作弊实践经验分享/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <p>前言<br>互联网产品经常会举行一些活动，数量繁多，形式各异。比如朋友圈集赞送礼，转发微博抽奖，拉新用户送福利，参加活动领取优惠券等等。这些活动，举办方大都有一些明确的目标，比如宣传，拉新，促销等。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/06/30/反作弊实践经验分享/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-      
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/06/02/java数据类型转换引发的血案/" itemprop="url">
-                  java数据类型转换引发的血案
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-02T23:18:19+08:00" content="2016-06-02">
-              2016-06-02
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/06/02/java数据类型转换引发的血案/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/02/java数据类型转换引发的血案/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>问题的起因<br>数据类型转换，应该是个很基础的问题，我们刚接触编程时就会学习相关的知识，但是有些东西看似基础，就算有一定经验的码农也可能栽在这些很基础的问题上。先说说今天为什么要来讨论下java的数据类型转换。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/06/02/java数据类型转换引发的血案/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
+    <div class="post-spread">
       
     </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/06/01/高并发下Java-Random类使用/" itemprop="url">
-                  高并发下Java Random类使用
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-01T21:00:55+08:00" content="2016-06-01">
-              2016-06-01
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/06/01/高并发下Java-Random类使用/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/01/高并发下Java-Random类使用/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">""</span>.split(<span class="string">","</span>).length); <span class="comment">// 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</span></span><br></pre></td></tr></table></figure></p>
-<p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/06/01/高并发下Java-Random类使用/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/31/JVM优化的几个原则/" itemprop="url">
-                  JVM优化的几个原则
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T12:34:33+08:00" content="2016-05-31">
-              2016-05-31
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/31/JVM优化的几个原则/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/JVM优化的几个原则/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>本文通过GC日志分析总结JVM优化的一般规则<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/31/JVM优化的几个原则/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/31/性能定位整体思路/" itemprop="url">
-                  性能定位整体思路
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-31T00:13:08+08:00" content="2016-05-31">
-              2016-05-31
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/31/性能定位整体思路/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/31/性能定位整体思路/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>一个请求从客户端发起到最后在数据库中进行查询，中间经历了很多个环节。本文就是针对出现的问题，快速定位到是哪个步骤环节出现了问题，由于笔者也在不断的学习中，希望有问题大家能提出来共同进行学习。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/31/性能定位整体思路/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/05/30/ELK构建日志搜索服/" itemprop="url">
-                  ELK构建日志搜索服务
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-05-30T17:59:02+08:00" content="2016-05-30">
-              2016-05-30
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/05/30/ELK构建日志搜索服/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/30/ELK构建日志搜索服/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>ELK搭建日志搜索服务的整体架构分析<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/05/30/ELK构建日志搜索服/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
@@ -1021,6 +419,14 @@ slabs_preallocate(power_largest);
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/30/memcached-内存管理/"
+           data-title="memcached 内存管理" data-url="http://yoursite.com/2016/09/30/memcached-内存管理/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -1040,8 +446,17 @@ slabs_preallocate(power_largest);
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.png"
@@ -1091,6 +506,17 @@ slabs_preallocate(power_largest);
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Memcached介绍"><span class="nav-number">1.</span> <span class="nav-text">1.Memcached介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Memcached模型"><span class="nav-number">2.</span> <span class="nav-text">2.Memcached模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Memecached数据结构"><span class="nav-number">3.</span> <span class="nav-text">3. Memecached数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-源码分析"><span class="nav-number">4.</span> <span class="nav-text">4. 源码分析</span></a></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -1187,6 +613,10 @@ slabs_preallocate(power_largest);
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
