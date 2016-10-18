@@ -289,80 +289,441 @@
             <h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
 <h3 id="2-Memcached模型"><a href="#2-Memcached模型" class="headerlink" title="2.Memcached模型"></a>2.Memcached模型</h3><p>在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memcached内存管理的重要概念。<br>1.Slab<br>Slab是Memcached中分配的一块内存，默认大小是1M。Slab是Memcached内存分配的最小单位。<br>2.Chunk<br>Slab是Memcached中分配的最小单位，而每一个Slab又会进一步划分成一个个的Chunk。Chunk是Memcached存储数据的最小单元，一个Chunk只能存储一个对象。同时，一个Slab中所有的Chunk的大小是相同的。<br>3.Item<br>Item是Memcached中存储的实际数据。Item本身是一个复杂的数据结构，其中除了包含对象的Key-Value键值对，过期时间外，还有其他一些数据结构，稍后会具体介绍。Memcached将Item保存对应的Slab的某个Chunk中。<br>4.SlabClass<br>通过上面几个概念的介绍，我们知道Memcached通过分配Slab并把Slab划分成等大小的Chunk来进行存储。那么不同的Item大小数据应该如何存储呢？SlabClass把Slab划分成不同大小的组合，每一个SlabClass对应一种Slab，在同一个SlabClass中所有的Slab都划分成相同大小的Chunk。</p>
 <p>这里举一个还算比较形象的列子。Memcached的内存分配可以类比与我们上学时代的写字本。Slab相当于写字本的一页，Chunk相当于写字本一页中的一个个写字格子，Item相当于我们要写的字，而SlabClass相当于一个写字本。所以每一个写字本中的格子大小都是相同的，我们要写不同的字，只需要找最符合该字大小的写字本就可以了。</p>
-<h3 id="3-Memecached数据结构"><a href="#3-Memecached数据结构" class="headerlink" title="3. Memecached数据结构"></a>3. Memecached数据结构</h3><p>Memcached中最为基本的数据结构是slabclass_t，该数据结构记录了memcached中单个slabclass的结构，具体的数据结构源码如下：</p>
-<pre><code> typedef struct {
-unsigned int size; /*Chunk的大小，固定不变*/``
-unsigned int perslab;   /* 每一个slab中可以存储对象的数量 */`
-void *slots;           /* 链表记录slabclass中的所有空闲Chunk的列表 */`
-unsigned int sl_curr;   /* 总的空闲的item的数量，即slots的数量 */`
-unsigned int slabs;     /* 该slabclass中分配的slab的数量 */`
- void **slab_list;       /* slab指针的数组 */`
-unsigned int list_size; /* slab的数量 */`
- unsigned int killing;  /* index+1 of dying slab, or zero if none */`
-size_t requested; /* 已经被分配的大小 */`
-} slabclass_t;​ `
-</code></pre><p>这里重点介绍slots、slabs和slab_list。 slots是记录了该SlabClass中所有空闲的Chunk列表，是Memcached中内存分配的入口。这里的空闲列表主要来自于两个部分：新分配的Slab的空闲Chunk；已经使用的Chunk过期回收的Chunk。slabs记录的目前该SlabClass已经分配到内存的Slab的总数。slab_list是指针的数组，它表示目前该SlabClass中所有Slab的指针，但并不表示所有的Slab都已经分配了内存。<br>下面我们介绍一下Memcached中数据存储对象Item的结构：<br>    typedef struct _stritem {<br>    /<em> Protected by LRU locks </em>/<br>    struct _stritem <em>next; /</em> 链表中下一个对象，有可能是指slots中的下一个，也可能是LRU链表中的下一个 <em>/<br>    struct _stritem </em>prev; /<em> Rest are protected by an item lock </em>/<br>    struct _stritem <em>h_next; /</em> 相同hash值的hash链表中的下一个 <em>/<br>    rel_time_t time; /</em> 最近的访问时间 <em>/<br>    rel_time_t exptime; /</em> 过期时间 <em>/<br>    int nbytes; /</em> 数据大小 <em>/<br>    unsigned short refcount; uint8_t nsuffix; /</em> length of flags-and-length string <em>/<br>    uint8_t it_flags; /</em> ITEM_<em> above </em>/<br>    uint8_t slabs_clsid;/<em> slab class的编号，表示该Item所在的slab class </em>/<br>    uint8_t nkey; /<em> 键值的长度 </em>/ /<em> this odd type prevents type-punning issues when we do </em> the little shuffle to save space when not using CAS. <em>/<br>    union {<br>     uint64_t cas;<br>     char end;<br>     } data[];<br>     /</em> if it_flags &amp; ITEM_CAS(大小为2) we have 8 bytes CAS <em>/<br>     /</em> then null-terminated key （以’\0’为结尾的key）<em>/<br>     /</em> then “ flags length\r\n” (no terminating null) <em>/<br>     /</em> then data with terminating \r\n (no terminating null; it’s binary!) */<br>     } item;</p>
-<p>Item是Memcached存储数据的基本单位，这里我们重点介绍data<a href=""></a>数组。该数组的组成可以分成4个部分：8bytes的CAS，以’\0’结尾的Key，flags，二进制格式的数据。<br>介绍了SlabClass和Item，接下去介绍一下Memcached的LRU实现。内存的不足肯定会导致数据的换入和换出，而Memcached作为内存存储，采用了LRU的方式来进行数据替换。每一个SlabClass独自维护了一套LRU队列，分别是head和tail变量来LRU队列的头部和尾部，尾部的Item就是最近最少使用的数据，会先被淘汰。<br><img src="/2016/09/30/memcached-内存管理/1.png" alt="整体架构图" title="整体架构图"></p>
+<h3 id="3-Memecached数据结构"><a href="#3-Memecached数据结构" class="headerlink" title="3. Memecached数据结构"></a>3. Memecached数据结构</h3><p>Memcached中最为基本的数据结构是slabclass_t，该数据结构记录了memcached中单个slabclass的结构，具体的数据结构源码如下：<br>    typedef struct {<br>    unsigned int size;      /<em> Chunk的大小，固定不变 </em>/<br>    unsigned int perslab;   /<em> 每一个slab中可以存储对象的数量  </em>/</p>
+<pre><code>void *slots;           /* l链表记录slabclass中的所有空闲Chunk的列表*/
+unsigned int sl_curr;   /* 总的空闲的item的数量，即slots的数量 */
+
+unsigned int slabs;     /* 该slabclass中分配的slab的数量 */
+
+void **slab_list;       /*slab指针的数组 */
+unsigned int list_size; /* slab的数量  */
+
+size_t requested; /* 已经被分配的大小*/
+} slabclass_t;
+</code></pre><p>这里重点介绍slots、slabs和slab_list。 slots是记录了该SlabClass中所有空闲的Chunk列表，是Memcached中内存分配的入口。这里的空闲列表主要来自于两个部分：新分配的Slab的空闲Chunk；已经使用的Chunk过期回收的Chunk。slabs记录的目前该SlabClass已经分配到内存的Slab的总数。slab_list是指针的数组，它表示目前该SlabClass中所有Slab的指针，但并不表示所有的Slab都已经分配了内存。<br>下面我们介绍一下Memcached中数据存储对象Item的结构：<br>    typedef struct _stritem {<br>        /<em> Protected by LRU locks </em>/<br>        struct _stritem <em>next;/</em>链表中下一个对象，有可能是指slots中的下一个，也可能是LRU链表中的下一个<em>/<br>        struct _stritem </em>prev;<br>        /<em> Rest are protected by an item lock </em>/<br>        struct _stritem <em>h_next;    /</em> 相同hash值的hash链表中的下一个  <em>/<br>        rel_time_t      time;       /</em> 最近的访问时间 <em>/<br>        rel_time_t      exptime;    /</em> 过期时间 <em>/<br>        int             nbytes;     /</em> 数据大小 <em>/<br>        unsigned short  refcount;<br>        uint8_t         nsuffix;    /</em> length of flags-and-length string <em>/<br>        uint8_t         it_flags;   /</em> ITEM_<em> above </em>/<br>        uint8_t         slabs_clsid;/<em> slab class的编号，表示该Item所在的slab class </em>/<br>        uint8_t         nkey;       /<em> 键值的长度</em>/<br>        /* this odd type prevents type-punning issues when we do</p>
+<pre><code>     * the little shuffle to save space when not using CAS. */
+    union {
+        uint64_t cas;
+        char end;
+    } data[];
+    /* if it_flags &amp; ITEM_CAS we have 8 bytes CAS */
+    /* then null-terminated key */
+    /* then &quot; flags length\r\n&quot; (no terminating null) */
+    /* then data with terminating \r\n (no terminating null; it&apos;s binary!) */
+} item;
+</code></pre><p>Item是Memcached存储数据的基本单位，这里我们重点介绍data数组。该数组的组成可以分成4个部分：8bytes的CAS，以’\0’结尾的Key，flags，二进制格式的数据。<br>介绍了SlabClass和Item，接下去介绍一下Memcached的LRU实现。内存的不足肯定会导致数据的换入和换出，而Memcached作为内存存储，采用了LRU的方式来进行数据替换。每一个SlabClass独自维护了一套LRU队列，分别是head和tail变量来LRU队列的头部和尾部，尾部的Item就是最近最少使用的数据，会先被淘汰。<br><img src="/2016/09/30/memcached-内存管理/1.png" alt="整体架构图" title="整体架构图"></p>
 <p>上图我们可以比较简单的看出的slabclass的内存的管理方式，但实际LRU实现远比这幅图要更为复杂，LRU策略分的更为细粒度。LRU对于Memcached来说单个SlabClass的LRU，而不是整体Memcached的LRU，这是由其内存的分配和管理方式决定，但是也可以通过内存的重分配来调整SlabClass之间的内存分配。<br>Memcached内存的分配和管理方式，虽然可以避免内存的碎片化，但带来的影响是会造成内存的浪费。举个列子：假设有Item的大小为50K，而可以存该Item的Chunk最合适大小为80K，这样就会造成30K内存的浪费。 </p>
 <h3 id="4-源码分析"><a href="#4-源码分析" class="headerlink" title="4. 源码分析"></a>4. 源码分析</h3><p>通过上面内容的介绍，我们已经比较好的了解了Memcached的内存模型，下面我们从代码层面来看看Memcached是如何进行内存的分配的。<br>Slabclass数组的初始化： </p>
-<pre><code>/*系统初始化会进行slabclass的初始化*/ 
-static slabclass_t slabclass[MAX_NUMBER_OF_SLAB_CLASSES];
-void slabs_init(const size_t limit, const double factor, const bool prealloc) {
-int i = POWER_SMALLEST - 1; //确定SlabClass数组开始分配的起点 
-unsigned int size = sizeof(item) + settings.chunk_size; //确定初始化SlabClass可以存储的固定大小，item记录元数据，chunk存储用户数据 
-mem_limit = limit; //可以分配的最大内存 
-if (prealloc) { //这段代码如果需要与分配内存的时候会调用 
+<pre><code>void slabs_init(const size_t limit, const double factor, const bool prealloc, const uint32_t *slab_sizes) {
+int i = POWER_SMALLEST - 1; //确定SlabClass数组开始分配的起点
+unsigned int size = sizeof(item) + settings.chunk_size;
+          //确定初始化SlabClass可以存储的固定大小，item记录元数据，chunk存储用户数据 
+mem_limit = limit;
+
+if (prealloc) {
 /* Allocate everything in a big chunk with malloc */
- mem_base = malloc(mem_limit); 
- if (mem_base != NULL) { 
-  mem_current = mem_base; mem_avail = mem_limit; 
-  } else { 
-  fprintf(stderr, &quot;Warning: Failed to allocate requested memory in&quot; &quot; one large chunk.\nWill allocate in smaller chunks\n&quot;); 
-  } 
- } 
- memset(slabclass, 0, sizeof(slabclass)); 
- while (++i &lt; MAX_NUMBER_OF_SLAB_CLASSES-1 &amp;&amp; size &lt;= settings.item_size_max / factor) 
- {
-  /* 这段代码保证在Memcached中存储的对象都是对齐的，默认是使用8位对齐的*/ 
-  if (size % CHUNK_ALIGN_BYTES) size += CHUNK_ALIGN_BYTES - (size % CHUNK_ALIGN_BYTES); 
-  /* 计算该slabclass存在的item的大小和数量*/ 
-  slabclass[i].size = size; 
-  slabclass[i].perslab = settings.item_size_max / slabclass[i].size; 
-  /* 下一个slab的大小的size是按factor参数规律扩展，可以通过调节factor大小来控制memcached的存储分配 */ 
-  size *= factor; 
-  if (settings.verbose &gt; 1) { 
-  fprintf(stderr, &quot;slab class %3d: chunk size %9u perslab %7u\n&quot;, i, slabclass[i].size, slabclass[i].perslab); 
-  } 
-  } 
-  /* power_largest表示最后一个slabclass， 大小设置成item_size_max,可以存储我们约定的最大的对象，一个slab只能存一个item，一个slab默认的大小是1M */ 
-  power_largest = i; 
-  slabclass[power_largest].size = settings.item_size_max; 
-  slabclass[power_largest].perslab = 1; 
-  if (settings.verbose &gt; 1) {
-fprintf(stderr, &quot;slab class %3d: chunk size %9u perslab %7u\n&quot;, i,
-slabclass[i].size, slabclass[i].perslab);
-  } 
-  /* for the test suite: faking of how much we&apos;ve already malloc&apos;d */ 
-  { 
-  char *t_initial_malloc = getenv(&quot;T_MEMD_INITIAL_MALLOC&quot;); 
-  if (t_initial_malloc) { mem_malloced = (size_t)atol(t_initial_malloc); 
-   } 
-  }
-   /* 如果需要预分配内存，则会执行这段逻辑，进行预分配 */ 
-   if (prealloc) 
-   { 
-   /* 默认每个slabclass分配一个slab */ 
+mem_base = malloc(mem_limit);
+if (mem_base != NULL) {
+mem_current = mem_base;
+mem_avail = mem_limit;
+} else {
+fprintf(stderr, &quot;Warning: Failed to allocate requested memory in&quot;
+&quot; one large chunk.\nWill allocate in smaller chunks\n&quot;);
+}
+}
+
+memset(slabclass, 0, sizeof(slabclass));
+
+while (++i &lt; MAX_NUMBER_OF_SLAB_CLASSES-1) {
+if (slab_sizes != NULL) {
+if (slab_sizes[i-1] == 0)
+break;
+size = slab_sizes[i-1];
+} else if (size &gt;= settings.slab_chunk_size_max / factor) {
+break;
+}
+/* 这段代码保证在Memcached中存储的对象都是对齐的，默认是使用8位对齐的*/ 
+if (size % CHUNK_ALIGN_BYTES)
+size += CHUNK_ALIGN_BYTES - (size % CHUNK_ALIGN_BYTES);
+                 /* 计算该slabclass存在的item的大小和数量*/ 
+slabclass[i].size = size;
+slabclass[i].perslab = settings.slab_page_size / slabclass[i].size;
+ /* 下一个slab的大小的size是按factor参数规律扩展，可以通过调节factor大小来控制memcached的存储分配 */ 
+if (slab_sizes == NULL)
+size *= factor;
+if (settings.verbose &gt; 1) {
+fprintf(stderr, &quot;slab class %3d: chunk size %9u perslab %7u\n&quot;,
+i, slabclass[i].size, slabclass[i].perslab);
+}
+}
+/* power_largest表示最后一个slabclass， 大小设置成item_size_max,可以存储我们约定的最大的对象，一个slab只能存一个item，一个slab默认的大小是1M */ 
+power_largest = i;
+slabclass[power_largest].size = settings.slab_chunk_size_max;
+slabclass[power_largest].perslab = settings.slab_page_size / settings.slab_chunk_size_max;
+if (settings.verbose &gt; 1) {
+fprintf(stderr, &quot;slab class %3d: chunk size %9u perslab %7u\n&quot;,
+i, slabclass[i].size, slabclass[i].perslab);
+}
+
+/* for the test suite:  faking of how much we&apos;ve already malloc&apos;d */
+{
+char *t_initial_malloc = getenv(&quot;T_MEMD_INITIAL_MALLOC&quot;);
+if (t_initial_malloc) {
+mem_malloced = (size_t)atol(t_initial_malloc);
+}
+
+}
+ /* 如果需要预分配内存，则会执行这段逻辑，进行预分配 */ 
+if (prealloc) {
+/* 默认每个slabclass分配一个slab */ 
 slabs_preallocate(power_largest);
- } 
-  }    
+}
+}
 </code></pre><p>从slabclass的初始化代码我们可知，每一个slabclass的可以存储的item大小是固定，不同的slabclass的item大小的增长是由growth_rate来控制（默认是1.25）。growth_rate的大小会影响到内存的使用率，这个需要根据应用来进行调优。<br>在下面介绍了slabclass的初始化中，有不少系统的设置，其定义具体如下： </p>
-<pre><code>static void settings_init(void) { settings.use_cas = true; settings.access = 0700; settings.port = 11211; settings.udpport = 11211; /* By default this string should be NULL for getaddrinfo() */ settings.inter = NULL; settings.maxbytes = 64 * 1024 * 1024; /* default is 64MB */ settings.maxconns = 1024; /* to limit connections-related memory to about 5MB */ settings.verbose = 0; settings.oldest_live = 0; settings.oldest_cas = 0; /* supplements accuracy of oldest_live */ settings.evict_to_free = 1; /* push old items out of cache when memory runs out */ settings.socketpath = NULL; /* by default, not using a unix socket */ settings.factor = 1.25; settings.chunk_size = 48; /* 初始化的chunck_size */ settings.num_threads = 4; /* N workers */ settings.num_threads_per_udp = 0; settings.prefix_delimiter = &apos;:&apos;; settings.detail_enabled = 0; settings.reqs_per_event = 20; settings.backlog = 1024; settings.binding_protocol = negotiating_prot; settings.item_size_max = 1024 * 1024; /* 1M大小限制，它限制了Memcached缓存对象的最大值. */ settings.maxconns_fast = false; settings.lru_crawler = false; settings.lru_crawler_sleep = 100; settings.lru_crawler_tocrawl = 0; settings.lru_maintainer_thread = false; settings.hot_lru_pct = 32; settings.warm_lru_pct = 32; settings.expirezero_does_not_evict = false; settings.hashpower_init = 0; settings.slab_reassign = false; settings.slab_automove = 0; settings.shutdown_command = false; settings.tail_repair_time = TAIL_REPAIR_TIME_DEFAULT; settings.flush_enabled = true; settings.crawls_persleep = 1000; }
+<pre><code>static void settings_init(void) {
+settings.use_cas = true;
+settings.access = 0700;
+settings.port = 11211;
+settings.udpport = 11211;
+/* By default this string should be NULL for getaddrinfo() */
+settings.inter = NULL;
+settings.maxbytes = 64 * 1024 * 1024; /* default is 64MB */
+settings.maxconns = 1024;         /* to limit connections-related memory to about 5MB */
+settings.verbose = 0;
+settings.oldest_live = 0;
+settings.oldest_cas = 0;          /* supplements accuracy of oldest_live */
+settings.evict_to_free = 1;       /* push old items out of cache when memory runs out */
+settings.socketpath = NULL;       /* by default, not using a unix socket */
+settings.factor = 1.25;
+settings.chunk_size = 48;         /* 初始化的chunck_size */
+settings.num_threads = 4;         /* N workers */
+settings.num_threads_per_udp = 0;
+settings.prefix_delimiter = &apos;:&apos;;
+settings.detail_enabled = 0;
+settings.reqs_per_event = 20;
+settings.backlog = 1024;
+settings.binding_protocol = negotiating_prot;
+settings.item_size_max = 1024 * 1024; /* 1M大小限制，它限制了Memcached缓存对象的最大值. */
+settings.slab_page_size = 1024 * 1024; /* chunks are split from 1MB pages. */
+settings.slab_chunk_size_max = settings.slab_page_size;
+settings.sasl = false;
+settings.maxconns_fast = false;
+settings.lru_crawler = false;
+settings.lru_crawler_sleep = 100;
+settings.lru_crawler_tocrawl = 0;
+settings.lru_maintainer_thread = false;
+settings.hot_lru_pct = 32;
+settings.warm_lru_pct = 32;
+settings.expirezero_does_not_evict = false;
+settings.idle_timeout = 0; /* disabled */
+settings.hashpower_init = 0;
+settings.slab_reassign = false;
+settings.slab_automove = 0;
+settings.shutdown_command = false;
+settings.tail_repair_time = TAIL_REPAIR_TIME_DEFAULT;
+settings.flush_enabled = true;
+settings.crawls_persleep = 1000;
+settings.logger_watcher_buf_size = LOGGER_WATCHER_BUF_SIZE;
+settings.logger_buf_size = LOGGER_BUF_SIZE;
+}
 </code></pre><p>上面介绍了SlabClass的初始化，这里介绍一下每一个slab是如何进行分配的。</p>
-<pre><code>static int do_slabs_newslab(const unsigned int id) { slabclass_t *p = &amp;slabclass[id]; /*如果Memcached要进行重分配的话，则默认使用Slab的最大值*/ int len = settings.slab_reassign ? settings.item_size_max : p-&gt;size * p-&gt;perslab; char *ptr; if ((mem_limit &amp;&amp; mem_malloced + len &gt; mem_limit &amp;&amp; p-&gt;slabs &gt; 0)) { mem_limit_reached = true; MEMCACHED_SLABS_SLABCLASS_ALLOCATE_FAILED(id); return 0; } /* grow_slab_list方法中实现了slabclass中slab size的重分配，如果slabs&lt;list_size,说明还有空余的slab，否则进行2倍的扩张（默认是16个） */ if ((grow_slab_list(id) == 0) || ((ptr = memory_allocate((size_t)len)) == 0)) { MEMCACHED_SLABS_SLABCLASS_ALLOCATE_FAILED(id); return 0; } memset(ptr, 0, (size_t)len); /* 获取一个空闲的Slab，用指针ptr表示 */ split_slab_page_into_freelist(ptr, id); p-&gt;slab_list[p-&gt;slabs++] = ptr; mem_malloced += len; MEMCACHED_SLABS_SLABCLASS_ALLOCATE(id); return 1; }
-</code></pre><p>SlabClass在进行Slab的申请的过程中，会先判断Slab是否已经达到上限（slabs>=list_size），然后来申请一个Slab的内存。在申请完Slab的内容后，Memcached会对该Slab进行划分，划分成一个个空闲的Chunk。下面我们具体看看空闲slab是如何获取的。<br>    static void split_slab_page_into_freelist(char <em>ptr, const unsigned int id) { slabclass_t </em>p = &amp;slabclass[id]; int x; for (x = 0; x &lt; p-&gt;perslab; x++) { do_slabs_free(ptr, 0, id); ptr += p-&gt;size; } } /<em>单个item的初始化</em>/ static void do_slabs_free(void <em>ptr, const size_t size, unsigned int id) { slabclass_t </em>p; item <em>it; assert(id &gt;= POWER_SMALLEST &amp;&amp; id &lt;= power_largest); if (id &lt; POWER_SMALLEST || id &gt; power_largest) return; MEMCACHED_SLABS_FREE(size, id, ptr); p = &amp;slabclass[id]; /</em>把新分配处理的Item添加到空闲列表Slots中去<em>/ it = (item </em>)ptr; it-&gt;it_flags |= ITEM_SLABBED; it-&gt;slabs_clsid = 0; it-&gt;prev = 0; it-&gt;next = p-&gt;slots; if (it-&gt;next) it-&gt;next-&gt;prev = it; p-&gt;slots = it; p-&gt;sl_curr++; p-&gt;requested -= size; return; }</p>
-<p>所以memcached每申请一个新的slab，都会把该slab进行item化的划分，并使用链表来记录。到此为止，所有的Memcached的内存都已经初始化了，结果是建立了所有slabclass的数组和每个slabclass中的数量（默认是16个），每个slabclass中的大小固定，每个slab中的数量固定，并初始化了一个Slab中的所有空闲Item。而所有的item在一个slot中是采用链表来记录的，数据结构为slots，这个是垮slab，所有的slab中的item都可以找到，并且是顺序存储的。<br>介绍了上面的slab的分配，下面重点介绍Item是如何获取内存的，可以该方法是Memcached内存分配的最核心入口，代码如下：<br>    define HOT_LRU 0 #define WARM_LRU 64 #define COLD_LRU 128 #define NOEXP_LRU 192 item <em>do_item_alloc(char </em>key, const size_t nkey, const int flags, const rel_time_t exptime, const int nbytes, const uint32_t cur_hv) { int i; uint8_t nsuffix; item <em>it = NULL; char suffix[40]; unsigned int total_chunks; size_t ntotal = item_make_header(nkey + 1, flags, nbytes, suffix, &amp;nsuffix); //计算item的大小 if (settings.use_cas) { ntotal += sizeof(uint64_t); } //根据存储的总大小判断存储的slabclass，slabclass从1开始 unsigned int id = slabs_clsid(ntotal); if (id == 0) return 0; /</em> If no memory is available, attempt a direct LRU juggle/eviction <em>/ /</em> This is a race in order to simplify lru_pull_tail; in cases where <em> locked items are on the tail, you want them to fall out and cause </em> occasional OOM’s, rather than internally work around them. <em> This also gives one fewer code path for slab alloc/free </em>/ for (i = 0; i &lt; 5; i++) { /<em> 首先进行内存的回收,默认lru_maintainer_thread为false </em>/ if (!settings.lru_maintainer_thread) { lru_pull_tail(id, COLD_LRU, 0, false, cur_hv); } /<em>进行了Item内存的分配</em>/ it = slabs_alloc(ntotal, id, &amp;total_chunks); if (settings.expirezero_does_not_evict) total_chunks -= noexp_lru_size(id); /<em>根据Item是否</em>/ if (it == NULL) { if (settings.lru_maintainer_thread) { lru_pull_tail(id, HOT_LRU, total_chunks, false, cur_hv); lru_pull_tail(id, WARM_LRU, total_chunks, false, cur_hv); lru_pull_tail(id, COLD_LRU, total_chunks, true, cur_hv); } else { lru_pull_tail(id, COLD_LRU, 0, true, cur_hv); } } else { break; } } if (i &gt; 0) { pthread_mutex_lock(&amp;lru_locks[id]); itemstats[id].direct_reclaims += i; pthread_mutex_unlock(&amp;lru_locks[id]); } /<em>没有足够的内存来保存</em>/ if (it == NULL) { pthread_mutex_lock(&amp;lru_locks[id]); itemstats[id].outofmemory++; pthread_mutex_unlock(&amp;lru_locks[id]); return NULL; } assert(it-&gt;slabs_clsid == 0); //assert(it != heads[id]); /<em> Refcount is seeded to 1 by slabs_alloc() </em>/ it-&gt;next = it-&gt;prev = it-&gt;h_next = 0; /<em> Items are initially loaded into the HOT_LRU. This is ‘0’ but I want at </em> least a note here. Compiler (hopefully?) optimizes this out. <em>/ if (settings.lru_maintainer_thread) { if (exptime == 0 &amp;&amp; settings.expirezero_does_not_evict) { id |= NOEXP_LRU; } else { id |= HOT_LRU; } } else { /</em> There is only COLD in compat-mode <em>/ id |= COLD_LRU; } it-&gt;slabs_clsid = id; DEBUG_REFCNT(it, ‘</em>‘); it-&gt;it_flags = settings.use_cas ? ITEM_CAS : 0; it-&gt;nkey = nkey; it-&gt;nbytes = nbytes; memcpy(ITEM_key(it), key, nkey); it-&gt;exptime = exptime; memcpy(ITEM_suffix(it), suffix, (size_t)nsuffix); it-&gt;nsuffix = nsuffix; return it; }</p>
-<p>从这段代码中，item内存的分配是先进行LRU的判断，释放LRU中过期的Item，然后通过slab_alloc来进行分配，如果还没有足够的内存，继续进行LRU内存的释放（这次可以通过抛弃还未过期的最近最少使用的对象）。我们先看看lru_pull_tail的实现：</p>
-<pre><code>/* Returns number of items remove, expired, or evicted. * Callable from worker threads or the LRU maintainer thread */ static int lru_pull_tail(const int orig_id, const int cur_lru, const unsigned int total_chunks, const bool do_evict, const uint32_t cur_hv) { item *it = NULL; int id = orig_id; int removed = 0; if (id == 0) return 0; int tries = 5; item *search; item *next_it; void *hold_lock = NULL; unsigned int move_to_lru = 0; uint64_t limit; id |= cur_lru; pthread_mutex_lock(&amp;lru_locks[id]); search = tails[id]; /* We walk up *only* for locked items, and if bottom is expired. */ for (; tries &gt; 0 &amp;&amp; search != NULL; tries--, search=next_it) { /* we might relink search mid-loop, so search-&gt;prev isn&apos;t reliable */ next_it = search-&gt;prev; if (search-&gt;nbytes == 0 &amp;&amp; search-&gt;nkey == 0 &amp;&amp; search-&gt;it_flags == 1) { /* We are a crawler, ignore it. */ tries++; continue; } uint32_t hv = hash(ITEM_key(search), search-&gt;nkey); /* 尝试lock search item，如果失败，则跳过 * Attempt to hash item lock the &quot;search&quot; item. If locked, no * other callers can incr the refcount. Also skip ourselves. */ if (hv == cur_hv || (hold_lock = item_trylock(hv)) == NULL) continue; /* Now see if the item is refcount locked */ if (refcount_incr(&amp;search-&gt;refcount) != 2) { /* Note pathological case with ref&apos;ed items in tail. * Can still unlink the item, but it won&apos;t be reusable yet */ itemstats[id].lrutail_reflocked++; /* In case of refcount leaks, enable for quick workaround. */ /* WARNING: This can cause terrible corruption */ if (settings.tail_repair_time &amp;&amp; search-&gt;time + settings.tail_repair_time &lt; current_time) { itemstats[id].tailrepairs++; search-&gt;refcount = 1; /* refcount为1的会进行回收释放处理*/ do_item_unlink_nolock(search, hv); item_trylock_unlock(hold_lock); continue; } } /* Expired or flushed */ if ((search-&gt;exptime != 0 &amp;&amp; search-&gt;exptime &lt; current_time) || is_flushed(search)) { itemstats[id].reclaimed++; if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) { itemstats[id].expired_unfetched++; } /* refcnt 2 -&gt; 1 */ do_item_unlink_nolock(search, hv); /* refcnt 1 -&gt; 0 -&gt; item_free */ do_item_remove(search); item_trylock_unlock(hold_lock); removed++; /* If all we&apos;re finding are expired, can keep going */ continue; } /* If we&apos;re HOT_LRU or WARM_LRU and over size limit, send to COLD_LRU. * If we&apos;re COLD_LRU, send to WARM_LRU unless we need to evict */ switch (cur_lru) { case HOT_LRU: limit = total_chunks * settings.hot_lru_pct / 100; case WARM_LRU: limit = total_chunks * settings.warm_lru_pct / 100; if (sizes[id] &gt; limit) { itemstats[id].moves_to_cold++; move_to_lru = COLD_LRU; do_item_unlink_q(search); it = search; removed++; break; } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0) { /* Only allow ACTIVE relinking if we&apos;re not too large. */ itemstats[id].moves_within_lru++; search-&gt;it_flags &amp;= ITEM_ACTIVE; do_item_update_nolock(search); do_item_remove(search); item_trylock_unlock(hold_lock); } else { /* Don&apos;t want to move to COLD, not active, bail out */ it = search; } break; case COLD_LRU: it = search; /* No matter what, we&apos;re stopping */ if (do_evict) { if (settings.evict_to_free == 0) { /* Don&apos;t think we need a counter for this. It&apos;ll OOM. */ break; } itemstats[id].evicted++; itemstats[id].evicted_time = current_time - search-&gt;time; if (search-&gt;exptime != 0) itemstats[id].evicted_nonzero++; if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) { itemstats[id].evicted_unfetched++; } do_item_unlink_nolock(search, hv); removed++; } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0 &amp;&amp; settings.lru_maintainer_thread) { itemstats[id].moves_to_warm++; search-&gt;it_flags &amp;= ITEM_ACTIVE; move_to_lru = WARM_LRU; do_item_unlink_q(search); removed++; } break; } if (it != NULL) break; } pthread_mutex_unlock(&amp;lru_locks[id]); if (it != NULL) { if (move_to_lru) { it-&gt;slabs_clsid = ITEM_clsid(it); it-&gt;slabs_clsid |= move_to_lru; item_link_q(it); } do_item_remove(it); item_trylock_unlock(hold_lock); } return removed; }
+<pre><code>static int do_slabs_newslab(const unsigned int id) {
+slabclass_t *p = &amp;slabclass[id];
+slabclass_t *g = &amp;slabclass[SLAB_GLOBAL_PAGE_POOL];
+/*如果Memcached要进行重分配的话，则默认使用Slab的最大值*/
+int len = (settings.slab_reassign || settings.slab_chunk_size_max != settings.slab_page_size)
+? settings.slab_page_size
+: p-&gt;size * p-&gt;perslab;
+char *ptr;
+
+if ((mem_limit &amp;&amp; mem_malloced + len &gt; mem_limit &amp;&amp; p-&gt;slabs &gt; 0
+ &amp;&amp; g-&gt;slabs == 0)) {
+mem_limit_reached = true;
+MEMCACHED_SLABS_SLABCLASS_ALLOCATE_FAILED(id);
+return 0;
+}
+/* grow_slab_list方法中实现了slabclass中slab size的重分配，如果slabs&lt;list_size,说明还有空余的slab，否则进行2倍的扩张（默认是16个） */
+if ((grow_slab_list(id) == 0) ||
+(((ptr = get_page_from_global_pool()) == NULL) &amp;&amp;
+((ptr = memory_allocate((size_t)len)) == 0))) {
+
+MEMCACHED_SLABS_SLABCLASS_ALLOCATE_FAILED(id);
+return 0;
+}
+
+memset(ptr, 0, (size_t)len);
+/* 获取一个空闲的Slab，用指针ptr表示 */
+split_slab_page_into_freelist(ptr, id);
+
+p-&gt;slab_list[p-&gt;slabs++] = ptr;
+MEMCACHED_SLABS_SLABCLASS_ALLOCATE(id);
+
+return 1;
+}
+</code></pre><p>SlabClass在进行Slab的申请的过程中，会先判断Slab是否已经达到上限（slabs>=list_size），然后来申请一个Slab的内存。在申请完Slab的内容后，Memcached会对该Slab进行划分，划分成一个个空闲的Chunk。下面我们具体看看空闲slab是如何获取的。</p>
+<pre><code>static void do_slabs_free(void *ptr, const size_t size, unsigned int id) {
+slabclass_t *p;
+item *it;
+
+assert(id &gt;= POWER_SMALLEST &amp;&amp; id &lt;= power_largest);
+if (id &lt; POWER_SMALLEST || id &gt; power_largest)
+return;
+
+MEMCACHED_SLABS_FREE(size, id, ptr);
+p = &amp;slabclass[id];
+         /*把新分配处理的Item添加到空闲列表Slots中去*/
+it = (item *)ptr;
+if ((it-&gt;it_flags &amp; ITEM_CHUNKED) == 0) {
+it-&gt;it_flags = ITEM_SLABBED;
+it-&gt;slabs_clsid = 0;
+it-&gt;prev = 0;
+it-&gt;next = p-&gt;slots;
+if (it-&gt;next) it-&gt;next-&gt;prev = it;
+p-&gt;slots = it;
+
+p-&gt;sl_curr++;
+p-&gt;requested -= size;
+} else {
+do_slabs_free_chunked(it, size, id, p);
+}
+return;
+}
+</code></pre><p>所以memcached每申请一个新的slab，都会把该slab进行item化的划分，并使用链表来记录。到此为止，所有的Memcached的内存都已经初始化了，结果是建立了所有slabclass的数组和每个slabclass中的数量（默认是16个），每个slabclass中的大小固定，每个slab中的数量固定，并初始化了一个Slab中的所有空闲Item。而所有的item在一个slot中是采用链表来记录的，数据结构为slots，这个是垮slab，所有的slab中的item都可以找到，并且是顺序存储的。<br>介绍了上面的slab的分配，下面重点介绍Item是如何获取内存的，可以该方法是Memcached内存分配的最核心入口，代码如下：<br>    item <em>do_item_alloc(char </em>key, const size_t nkey, const unsigned int flags,<br>    const rel_time_t exptime, const int nbytes) {<br>    int i;<br>    uint8_t nsuffix;<br>    item *it = NULL;<br>    char suffix[40];<br>    size_t ntotal = item_make_header(nkey + 1, flags, nbytes, suffix, &amp;nsuffix);<br>    if (settings.use_cas) {<br>    ntotal += sizeof(uint64_t);<br>    }<br>            //根据存储的总大小判断存储的slabclass，slabclass从1开始<br>    unsigned int id = slabs_clsid(ntotal);<br>    if (id == 0)<br>    return 0;</p>
+<pre><code>/* If no memory is available, attempt a direct LRU juggle/eviction */
+/* This is a race in order to simplify lru_pull_tail; in cases where
+locked items are on the tail, you want them to fall out and cause
+    occasional OOM&apos;s, rather than internally work around them.
+    This also gives one fewer code path for slab alloc/free
+     */
+    for (i = 0; i &lt; 10; i++) {
+    uint64_t total_bytes;
+    /* 首先进行内存的回收,默认lru_maintainer_thread为false */
+    if (!settings.lru_maintainer_thread) {
+    lru_pull_tail(id, COLD_LRU, 0, 0);
+    }
+    /*进行了Item内存的分配*/
+    it = slabs_alloc(ntotal, id, &amp;total_bytes, 0);
+
+if (settings.expirezero_does_not_evict)
+total_bytes -= noexp_lru_size(id);    
+ ／*根据item是否为空*/
+if (it == NULL) {
+if (settings.lru_maintainer_thread) {
+lru_pull_tail(id, HOT_LRU, total_bytes, 0);
+lru_pull_tail(id, WARM_LRU, total_bytes, 0);
+if (lru_pull_tail(id, COLD_LRU, total_bytes, LRU_PULL_EVICT) &lt;= 0)
+break;
+} else {
+if (lru_pull_tail(id, COLD_LRU, 0, LRU_PULL_EVICT) &lt;= 0)
+break;
+}
+} else {
+break;
+}
+}
+
+if (i &gt; 0) {
+pthread_mutex_lock(&amp;lru_locks[id]);
+itemstats[id].direct_reclaims += i;
+pthread_mutex_unlock(&amp;lru_locks[id]);
+}
+     /*没有足够的内存来保存*/
+if (it == NULL) {
+pthread_mutex_lock(&amp;lru_locks[id]);
+itemstats[id].outofmemory++;
+pthread_mutex_unlock(&amp;lru_locks[id]);
+return NULL;
+}
+
+assert(it-&gt;slabs_clsid == 0);
+//assert(it != heads[id]);
+
+/* Refcount is seeded to 1 by slabs_alloc() */
+it-&gt;next = it-&gt;prev = 0;
+
+/* Items are initially loaded into the HOT_LRU. This is &apos;0&apos; but I want at
+least a note here. Compiler (hopefully?) optimizes this out.
+     */
+    if (settings.lru_maintainer_thread) {
+    if (exptime == 0 &amp;&amp; settings.expirezero_does_not_evict) {
+    id |= NOEXP_LRU;
+    } else {
+    id |= HOT_LRU;
+    }
+    } else {
+    /* There is only COLD in compat-mode */
+    id |= COLD_LRU;
+    }
+    it-&gt;slabs_clsid = id;
+
+DEBUG_REFCNT(it, &apos;*&apos;);
+it-&gt;it_flags |= settings.use_cas ? ITEM_CAS : 0;
+it-&gt;nkey = nkey;
+it-&gt;nbytes = nbytes;
+memcpy(ITEM_key(it), key, nkey);
+it-&gt;exptime = exptime;
+memcpy(ITEM_suffix(it), suffix, (size_t)nsuffix);
+it-&gt;nsuffix = nsuffix;
+
+/* Need to shuffle the pointer stored in h_next into it-&gt;data. */
+if (it-&gt;it_flags &amp; ITEM_CHUNKED) {
+item_chunk *chunk = (item_chunk *) ITEM_data(it);
+
+chunk-&gt;next = (item_chunk *) it-&gt;h_next;
+chunk-&gt;prev = 0;
+chunk-&gt;head = it;
+/* Need to chain back into the head&apos;s chunk */
+chunk-&gt;next-&gt;prev = chunk;
+chunk-&gt;size = chunk-&gt;next-&gt;size - ((char *)chunk - (char *)it);
+chunk-&gt;used = 0;
+assert(chunk-&gt;size &gt; 0);
+}
+it-&gt;h_next = 0;
+
+return it;
+}
+</code></pre><p>从这段代码中，item内存的分配是先进行LRU的判断，释放LRU中过期的Item，然后通过slab_alloc来进行分配，如果还没有足够的内存，继续进行LRU内存的释放（这次可以通过抛弃还未过期的最近最少使用的对象）。我们先看看lru_pull_tail的实现：<br>    static int lru_pull_tail(const int orig_id, const int cur_lru,<br>    const uint64_t total_bytes, uint8_t flags) {<br>    item *it = NULL;<br>    int id = orig_id;<br>    int removed = 0;<br>    if (id == 0)<br>    return 0;</p>
+<pre><code>int tries = 5;
+item *search;
+item *next_it;
+void *hold_lock = NULL;
+unsigned int move_to_lru = 0;
+uint64_t limit = 0;
+
+id |= cur_lru;
+pthread_mutex_lock(&amp;lru_locks[id]);
+search = tails[id];
+/* We walk up *only* for locked items, and if bottom is expired. */
+for (; tries &gt; 0 &amp;&amp; search != NULL; tries--, search=next_it) {
+/* we might relink search mid-loop, so search-&gt;prev isn&apos;t reliable */
+next_it = search-&gt;prev;
+if (search-&gt;nbytes == 0 &amp;&amp; search-&gt;nkey == 0 &amp;&amp; search-&gt;it_flags == 1) {
+/* We are a crawler, ignore it. */
+if (flags &amp; LRU_PULL_CRAWL_BLOCKS) {
+pthread_mutex_unlock(&amp;lru_locks[id]);
+return 0;
+}
+tries++;
+continue;
+}
+uint32_t hv = hash(ITEM_key(search), search-&gt;nkey);
+/* 尝试lock search item，如果失败，则跳过
+   *Attempt to hash item lock the &quot;search&quot; item. If locked, no
+other callers can incr the refcount. Also skip ourselves. */
+    if ((hold_lock = item_trylock(hv)) == NULL)
+    continue;
+    /* Now see if the item is refcount locked */
+    if (refcount_incr(&amp;search-&gt;refcount) != 2) {
+    /* Note pathological case with ref&apos;ed items in tail.
+    Can still unlink the item, but it won&apos;t be reusable yet */
+        itemstats[id].lrutail_reflocked++;
+        /* In case of refcount leaks, enable for quick workaround. */
+        /* WARNING: This can cause terrible corruption */
+        if (settings.tail_repair_time &amp;&amp;
+        search-&gt;time + settings.tail_repair_time &lt; current_time) {
+        itemstats[id].tailrepairs++;
+        search-&gt;refcount = 1;
+        /* This will call item_remove -&gt; item_free since refcnt is 1 */
+        do_item_unlink_nolock(search, hv);
+        item_trylock_unlock(hold_lock);
+        continue;
+        }
+        }
+
+/* Expired or flushed */
+if ((search-&gt;exptime != 0 &amp;&amp; search-&gt;exptime &lt; current_time)
+|| item_is_flushed(search)) {
+itemstats[id].reclaimed++;
+if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) {
+itemstats[id].expired_unfetched++;
+}
+/* refcnt 2 -&gt; 1 */
+do_item_unlink_nolock(search, hv);
+/* refcnt 1 -&gt; 0 -&gt; item_free */
+do_item_remove(search);
+item_trylock_unlock(hold_lock);
+removed++;
+
+/* If all we&apos;re finding are expired, can keep going */
+continue;
+}
+
+/* If we&apos;re HOT_LRU or WARM_LRU and over size limit, send to COLD_LRU.
+If we&apos;re COLD_LRU, send to WARM_LRU unless we need to evict
+     */
+    switch (cur_lru) {
+    case HOT_LRU:
+    limit = total_bytes * settings.hot_lru_pct / 100;
+    case WARM_LRU:
+    if (limit == 0)
+    limit = total_bytes * settings.warm_lru_pct / 100;
+    if (sizes_bytes[id] &gt; limit) {
+    itemstats[id].moves_to_cold++;
+    move_to_lru = COLD_LRU;
+    do_item_unlink_q(search);
+    it = search;
+    removed++;
+    break;
+    } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0) {
+    /* Only allow ACTIVE relinking if we&apos;re not too large. */
+    itemstats[id].moves_within_lru++;
+    search-&gt;it_flags &amp;= ~ITEM_ACTIVE;
+    do_item_update_nolock(search);
+    do_item_remove(search);
+    item_trylock_unlock(hold_lock);
+    } else {
+    /* Don&apos;t want to move to COLD, not active, bail out */
+    it = search;
+    }
+    break;
+    case COLD_LRU:
+    it = search; /* No matter what, we&apos;re stopping */
+    if (flags &amp; LRU_PULL_EVICT) {
+    if (settings.evict_to_free == 0) {
+    /* Don&apos;t think we need a counter for this. It&apos;ll OOM.  */
+    break;
+    }
+    itemstats[id].evicted++;
+    itemstats[id].evicted_time = current_time - search-&gt;time;
+    if (search-&gt;exptime != 0)
+    itemstats[id].evicted_nonzero++;
+    if ((search-&gt;it_flags &amp; ITEM_FETCHED) == 0) {
+    itemstats[id].evicted_unfetched++;
+    }
+    LOGGER_LOG(NULL, LOG_EVICTIONS, LOGGER_EVICTION, search);
+    do_item_unlink_nolock(search, hv);
+    removed++;
+    if (settings.slab_automove == 2) {
+    slabs_reassign(-1, orig_id);
+    }
+    } else if ((search-&gt;it_flags &amp; ITEM_ACTIVE) != 0
+    &amp;&amp; settings.lru_maintainer_thread) {
+    itemstats[id].moves_to_warm++;
+    search-&gt;it_flags &amp;= ~ITEM_ACTIVE;
+    move_to_lru = WARM_LRU;
+    do_item_unlink_q(search);
+    removed++;
+    }
+    break;
+    }
+    if (it != NULL)
+    break;
+    }
+
+pthread_mutex_unlock(&amp;lru_locks[id]);
+
+if (it != NULL) {
+if (move_to_lru) {
+it-&gt;slabs_clsid = ITEM_clsid(it);
+it-&gt;slabs_clsid |= move_to_lru;
+item_link_q(it);
+}
+do_item_remove(it);
+item_trylock_unlock(hold_lock);
+}
+
+return removed;
+}
 </code></pre><p>​<br>​<br>​</p>
 
           
