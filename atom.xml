@@ -4,7 +4,7 @@
   <subtitle><![CDATA[夕阳下，烟柳树，coding]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2016-10-18T05:04:05.000Z</updated>
+  <updated>2016-10-18T05:50:09.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,8 +19,9 @@
     <link href="http://yoursite.com/2016/09/30/memcached-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     <id>http://yoursite.com/2016/09/30/memcached-内存管理/</id>
     <published>2016-09-30T15:29:17.000Z</published>
-    <updated>2016-10-18T05:04:05.000Z</updated>
-    <content type="html"><![CDATA[<a id="more"></a>
+    <updated>2016-10-18T05:50:09.000Z</updated>
+    <content type="html"><![CDATA[<p>memcached 内存管理</p>
+<a id="more"></a>
 <h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
 <h3 id="2-Memcached模型"><a href="#2-Memcached模型" class="headerlink" title="2.Memcached模型"></a>2.Memcached模型</h3><p>在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memcached内存管理的重要概念。<br>1.Slab<br>Slab是Memcached中分配的一块内存，默认大小是1M。Slab是Memcached内存分配的最小单位。<br>2.Chunk<br>Slab是Memcached中分配的最小单位，而每一个Slab又会进一步划分成一个个的Chunk。Chunk是Memcached存储数据的最小单元，一个Chunk只能存储一个对象。同时，一个Slab中所有的Chunk的大小是相同的。<br>3.Item<br>Item是Memcached中存储的实际数据。Item本身是一个复杂的数据结构，其中除了包含对象的Key-Value键值对，过期时间外，还有其他一些数据结构，稍后会具体介绍。Memcached将Item保存对应的Slab的某个Chunk中。<br>4.SlabClass<br>通过上面几个概念的介绍，我们知道Memcached通过分配Slab并把Slab划分成等大小的Chunk来进行存储。那么不同的Item大小数据应该如何存储呢？SlabClass把Slab划分成不同大小的组合，每一个SlabClass对应一种Slab，在同一个SlabClass中所有的Slab都划分成相同大小的Chunk。</p>
 <p>这里举一个还算比较形象的列子。Memcached的内存分配可以类比与我们上学时代的写字本。Slab相当于写字本的一页，Chunk相当于写字本一页中的一个个写字格子，Item相当于我们要写的字，而SlabClass相当于一个写字本。所以每一个写字本中的格子大小都是相同的，我们要写不同的字，只需要找最符合该字大小的写字本就可以了。</p>
@@ -485,11 +486,9 @@ return removed;
 </code></pre><p>​<br>​<br>​</p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<a id="more"></a>
-<h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcac]]>
-    </summary>
+    <![CDATA[<p>memcached 内存管理</p>]]>
     
-      <category term="memcached" scheme="http://yoursite.com/tags/memcached/"/>
+    </summary>
     
   </entry>
   
