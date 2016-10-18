@@ -87,22 +87,22 @@
 
 
 <meta name="description" content="title: memcached 内存管理date: 2016-09-30 23:29:17tags:
-
-memcached—">
+- memcached
+—–">
 <meta property="og:type" content="article">
 <meta property="og:title" content="码农的耕地">
 <meta property="og:url" content="http://yoursite.com/2016/10/18/memcached-内存管理/index.html">
 <meta property="og:site_name" content="码农的耕地">
 <meta property="og:description" content="title: memcached 内存管理date: 2016-09-30 23:29:17tags:
-
-memcached—">
+- memcached
+—–">
 <meta property="og:image" content="http://yoursite.com/2016/10/18/memcached-内存管理/1.png">
-<meta property="og:updated_time" content="2016-10-18T04:55:04.000Z">
+<meta property="og:updated_time" content="2016-10-18T04:57:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="码农的耕地">
 <meta name="twitter:description" content="title: memcached 内存管理date: 2016-09-30 23:29:17tags:
-
-memcached—">
+- memcached
+—–">
 <meta name="twitter:image" content="http://yoursite.com/2016/10/18/memcached-内存管理/1.png">
 
 
@@ -253,7 +253,7 @@ memcached—">
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-10-18T12:55:16+08:00" content="2016-10-18">
+            <time itemprop="dateCreated" datetime="2016-10-18T12:57:48+08:00" content="2016-10-18">
               2016-10-18
             </time>
           </span>
@@ -290,9 +290,8 @@ memcached—">
       
         <hr>
 <p>title: memcached 内存管理<br>date: 2016-09-30 23:29:17<br>tags:</p>
-<ul>
-<li>memcached<br>—</li>
-</ul>
+<pre><code>- memcached
+</code></pre><p>—–</p>
 <a id="more"></a>
 <h3 id="1-Memcached介绍"><a href="#1-Memcached介绍" class="headerlink" title="1.Memcached介绍"></a>1.Memcached介绍</h3><p>​ Memcached是一套分布式的内存对象缓存系统，用于系统中减少数据库的负载，提高系统性能。本文介绍的Memcached内存管理方式基于1.4.31。旧版本的Memcached的内存管理方式与该版本会存在一定的不同，本文没有涉及旧版本的Memcached内存管理介绍。</p>
 <h3 id="2-Memcached模型"><a href="#2-Memcached模型" class="headerlink" title="2.Memcached模型"></a>2.Memcached模型</h3><p>在具体介绍Memcached内存管理的源码实现之前，我们先介绍一些Memcached内存管理的重要概念。<br>1.Slab<br>Slab是Memcached中分配的一块内存，默认大小是1M。Slab是Memcached内存分配的最小单位。<br>2.Chunk<br>Slab是Memcached中分配的最小单位，而每一个Slab又会进一步划分成一个个的Chunk。Chunk是Memcached存储数据的最小单元，一个Chunk只能存储一个对象。同时，一个Slab中所有的Chunk的大小是相同的。<br>3.Item<br>Item是Memcached中存储的实际数据。Item本身是一个复杂的数据结构，其中除了包含对象的Key-Value键值对，过期时间外，还有其他一些数据结构，稍后会具体介绍。Memcached将Item保存对应的Slab的某个Chunk中。<br>4.SlabClass<br>通过上面几个概念的介绍，我们知道Memcached通过分配Slab并把Slab划分成等大小的Chunk来进行存储。那么不同的Item大小数据应该如何存储呢？SlabClass把Slab划分成不同大小的组合，每一个SlabClass对应一种Slab，在同一个SlabClass中所有的Slab都划分成相同大小的Chunk。</p>
