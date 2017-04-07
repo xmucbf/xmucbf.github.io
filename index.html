@@ -235,6 +235,388 @@
             
               
                 
+                <a class="post-title-link" href="/2017/03/31/RPC服务化/" itemprop="url">
+                  RPC服务化
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-31T13:52:56+08:00" content="2017-03-31">
+              2017-03-31
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/03/31/RPC服务化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/31/RPC服务化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/02/28/Disruptor简介/" itemprop="url">
+                  Disruptor简介
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-28T09:57:01+08:00" content="2017-02-28">
+              2017-02-28
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/02/28/Disruptor简介/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/28/Disruptor简介/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h3><p>在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。</p>
+<p>Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：<a href="http://lmax-exchange.github.io/disruptor/" target="_blank" rel="external">http://lmax-exchange.github.io/disruptor/</a></p>
+<p>它是一个生产者消费者队列。与普通的队列不同，它通过数组实现了一个环，用于存放数据，叫做RingBuffer。框架大概如下图所示：<br><img src="/2017/02/28/Disruptor简介/1.png" alt="框架图" title="框架图"></p>
+<p>生产者(Producer)把数据塞进RingBuffer，然后消费者(Consumer)从RingBuffer中把数据读出来。</p>
+<p>RingBuffer拥有一个序号，这个序号指向数组中下一个可用的元素。随着你不停地填充这个buffer（可能也会有相应的读取），这个序号会一直增长，直到绕过这个环。通过mod操作，可以找到数组中的位置。</p>
+<h3 id="2-读写操作"><a href="#2-读写操作" class="headerlink" title="2.读写操作"></a>2.读写操作</h3><p>Disruptor具体怎么读写的，这些都可以从网上查到，我下边就简单介绍一下它的思路和为什么快的原因。</p>
+<p>多线程下其他队列之所以慢，是因为互斥锁的原因。Disruptor就解决了这个问题，Disruptor它是通过Volatile关键字实现。Disruptor的Volatile变量都不会出现同时写的操作，所以Volatile关键字就可以达到要求。</p>
+<p>Disruptor 的 RingBuffer 的指针是一个Volatile对象，消费者中的序列号也是volatile类型的。</p>
+<p>先说说写操作。</p>
+<p>写的时候，有2个指针，分别是：<br>next：第一个可以写的，移动的时候只能移动一个slot；<br>cursor：最后一个已经写了的，移动的时候只能移动一个slot。<br>写的时候，有2阶段步骤：（1）获取slot(nextEntry函数)的id，然后next指针后移；（2）写数据，然后cursor后移。<br>在下边的例子中，一开始的时候next在3，cursor在2，然后以下步骤：<br>(1)线程D先获取id = 3，next指向4；<br>(2)线程E获取id = 4，next指向5；<br>(3)线程E先写，写完后此时需要把cursor置为id 4，但是cursor只能加一，cursor是2不是3，所以就一直等待cursor变成3<br>(4)线程D写，把cursor置为id 3<br>(5)E发现cursor变成了3，然后把cursor变成4，结束。<br>如下图所示：<br><img src="/2017/02/28/Disruptor简介/2.png" alt="写操作图" title="写操作图"></p>
+<h3 id="3-读操作"><a href="#3-读操作" class="headerlink" title="3.读操作"></a>3.读操作</h3><p>下图展示当读写有冲突时的情形。该写12的时候，ProducerBarrier从所有Consumer处获取当前consumer读到的位置，发现consumer1还在读12，于是就等待，直到consumer把12读完了，Producer才可以写12。<br>写的时候，会去读取所有Consumer的当前的序号，这个值是volatile的，读不会出现错误的。（volatile在CPU写的时候会在所有读指令前边加上内存屏障，所以读到的一定是最新的）<br><img src="/2017/02/28/Disruptor简介/3.png" alt="读操作图" title="读操作图"></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/12/23/JavaNio/" itemprop="url">
+                  JavaNio
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-23T17:04:35+08:00" content="2016-12-23">
+              2016-12-23
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/23/JavaNio/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/23/JavaNio/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>NIO是New IO 的简称，为所有的原始类型提供(Buffer)缓存支持，提供了与标准IO不同的IO工作方式。现如今，大型网站多多少少使用了NIO框架（Netty, Mina），这使得了解NIO基础原理以及相应框架实现的必要性大大加强，本篇涉及到NIO的基础原理和实现。</p>
+<p>##BIO<br>BIO是指jdk1.4之前版本面向流的io，服务端需要对每个请求建立一个线程等待请求，而客户端发送请求后，先咨询服务端是否有线程响应，如果没有则会一直等待或者遭到拒绝，如果有的话，线程会阻塞直到IO结束后才继续执行，如图所示：<br><img src="/2016/12/23/JavaNio/1.png" alt="BIO图" title="BIO图"><br>形象比喻：<br>手接水管，手就是thread，水管就是socket，其中的水就是InputStream等流数据，不管水管中有没有水，手都会接着</p>
+<p>缺点：</p>
+<ol>
+<li>耗费线程资源，每一个请求有线程等待处理</li>
+<li>线程阻塞，需要等IO数据准备完全才可以，期间线程阻塞，资源白白浪费<br>##NIO<br>无阻塞io是使用单线程或者只使用少量的多线程，每个连接共用一个线程，当处于等待（没有事件）的时候线程资源可以释放出来处理别的请求，通过事件驱动模型当有accept/read/write等事件发生后通知（唤醒）主线程分配资源来处理相关事件。java.nio.channels.Selector就是在该模型中事件的观察者，可以将多个SocketChannel的事件注册到一个Selector上，当没有事件发生时Selector处于阻塞状态，当SocketChannel有accept/read/write等事件发生时唤醒Selector。如下是一个单线程模型的NIO：
+</li>
+</ol>
+<p>而在读取数据方面，不同于BIO从InputStream，OutputStream中逐字节读取，写入，NIO的数据必须读入缓冲区中，或写入缓冲区中，再进行处理，如图：<br><br>形象比喻：<br>不同于BIO的水管，NIO的channel是带龙头的水管，selector是接水工，buffer是水管下的水桶，现在只需一个接水工就可以接手N个水管（单线程模型），他不断查看这些水管（epoll轮询，如果没有水管有水，则阻塞），当发现已经有水管有水了之后，就去打开龙头，把水放入水桶中（从channel中将数据先写入buffer），如果发现水桶中水已经达到可以使用的情况（io数据准备完毕），就进行相应处理</p>
+<p>##NIO组件解析<br>从上分析可知，NIO中最重要的组件是：</p>
+<ol>
+<li>Buffer</li>
+<li>Channel</li>
+<li>Selector<br>###buffer<br>缓冲区本质上是一块可以写入数据，然后可以从中读取数据的内存。这块内存被包装成NIO Buffer对象，并提供了一组方法，用来方便的访问该块内存，Buffer 主要实现和工作原理依赖于三个属性：</li>
+<li>capacity：作为一个内存块，Buffer有一个固定的大小值，也叫capacity. 你只能往里写capacity个byte、long，char等类型。一旦Buffer满了，需要将其清空（通过读数据或者清除数据）才能继续写数据往里写数据</li>
+<li>position：当你写数据到Buffer中时，position表示当前的位置。初始的position值为0.当一个byte、long等数据写到Buffer后， position会向前移动到下一个可插入数据的Buffer单元。position最大可为capacity - 1</li>
+<li>limit：在写模式下，Buffer的limit表示你最多能往Buffer里写多少数据。 写模式下，limit等于Buffer的capacity; 当切换Buffer到读模式时， limit表示你最多能读到多少数据。因此，当切换Buffer到读模式时，limit会被设置成写模式下的position值。换句话说，你能读到之前写入的所有数据
+涉及操作：<br>flip(): 写模式切换到读模式, position = 0, limit = position<br>clear(): 清空buffer, position = 0, limit = capacity, 数据其实未清除<br>compact(): 有未读数据，并且仍需使用这些数据，将所有未读的数据拷贝到Buffer起始处。然后将position设到最后一个未读元素正后面。limit属性依然像clear()方法一样，设置成capacity<br>mark(), reset(): 对于position的标记和恢复<h2 id="channel-selector"><a href="#channel-selector" class="headerlink" title="channel + selector"></a>channel + selector</h2></li>
+</ol>
+<p>Channel类似BIO中的流，但有不同：</p>
+<ol>
+<li>既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的</li>
+<li>通道可以异步地读写</li>
+<li>通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入</li>
+</ol>
+<p>Java NIO中主要实现：<br>FileChannel：从文件中读写数据<br>DatagramChannel：能通过UDP读写网络中的数据<br>SocketChannel：能通过TCP读写网络中的数据<br>ServerSocketChannel：可以监听新进来的TCP连接，像Web服务器那样。对每一个新进来的连接都会创建一个SocketChannel</p>
+<p>Selector(选择器)是Java NIO中能够检测一到多个NIO通道，并能够知晓通道是否为诸如读写事件做好准备的组件</p>
+<p>以ServerSocketChannel为例子，一个简单实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">selector = Selector.open(); ServerSocketChannel ssc = ServerSocketChannel.open(); ssc.configureBlocking(<span class="keyword">false</span>); ssc.socket().bind(<span class="keyword">new</span> InetSocketAddress(port)); ssc.register(selector, SelectionKey.OP_ACCEPT); <span class="keyword">while</span> (<span class="keyword">true</span>) &#123; \/\/ select()阻塞，等待有事件发生唤醒 <span class="keyword">int</span> selected = selector.select(); <span class="keyword">if</span> (selected &gt; <span class="number">0</span>) &#123; Iterator selectedKeys = selector.selectedKeys().iterator(); <span class="keyword">while</span> (selectedKeys.hasNext()) &#123; SelectionKey key = selectedKeys.next(); <span class="keyword">if</span> ((key.readyOps() &amp; SelectionKey.OP_ACCEPT) == SelectionKey.OP_ACCEPT) &#123; \/\/ 处理 accept 事件 &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((key.readyOps() &amp; SelectionKey.OP_READ) == SelectionKey.OP_READ) &#123; \/\/ 处理 read 事件 &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((key.readyOps() &amp; SelectionKey.OP_WRITE) == SelectionKey.OP_WRITE) &#123; \/\/ 处理 write 事件 &#125; selectedKeys.remove(); &#125; &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>从上述代码可见，实现NIO关键点在于：</p>
+<ol>
+<li>Selector.open();</li>
+<li>Channel.register();</li>
+<li>selector.select();</li>
+<li>唤醒：通过注册在selector上的socket有事件发生 或者 selector.select(timeOut)超时 或者 selector.wakeup()主动唤醒</li>
+</ol>
+<h3 id="Selector阻塞和唤醒原理分析"><a href="#Selector阻塞和唤醒原理分析" class="headerlink" title="Selector阻塞和唤醒原理分析"></a>Selector阻塞和唤醒原理分析</h3><p>整体原理图：<br><br>从代码入手，进行逐步分析：<br>Selector.open()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Selector.java ----- <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Selector <span class="title">open</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">return</span> SelectorProvider.provider().openSelector(); &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">SelectorProvider.java ----- <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SelectorProvider <span class="title">provider</span><span class="params">()</span> </span>&#123; <span class="keyword">synchronized</span> (lock) &#123; <span class="keyword">if</span> (provider != <span class="keyword">null</span>) <span class="keyword">return</span> provider; <span class="keyword">return</span> (SelectorProvider)AccessController .doPrivileged(<span class="keyword">new</span> PrivilegedAction() &#123; <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123; <span class="keyword">if</span> (loadProviderFromProperty()) <span class="keyword">return</span> provider; <span class="keyword">if</span> (loadProviderAsService()) <span class="keyword">return</span> provider; provider = sun.nio.ch.DefaultSelectorProvider.create(); <span class="keyword">return</span> provider; &#125; &#125;); &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>(1) provider = sun.nio.ch.DefaultSelectorProvider.create();是根据操作系统返回不同的类，各个操作系统类的实现是不同的，以windows为例，其返回的是WindowsSelectorProvider<br>(2) provider 为单例模式</p>
+<p>SelectorProvider.provider().openSelector()返回的是各个操作系统下的selector实现，以windows操作系统下的WindowsSelectorProvider为例:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorProvider.java ---- <span class="function"><span class="keyword">public</span> AbstractSelector <span class="title">openSelector</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">return</span> <span class="keyword">new</span> WindowsSelectorImpl(<span class="keyword">this</span>); &#125;</span><br></pre></td></tr></table></figure>
+<p>在WindowsSelectorImpl实现中，主要完成了两件事：</p>
+<p>（1）初始化轮询数组</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorImpl.java ---- WindowsSelectorImpl(SelectorProvider sp) <span class="keyword">throws</span> IOException &#123; .... pollWrapper = <span class="keyword">new</span> PollArrayWrapper(INIT_CAP); .... &#125;</span><br></pre></td></tr></table></figure>
+<p>轮询数组是NIO的核心，其中记录了各个channel的句柄以及所需要监听的事件，底层操作系统就是通过轮询该数组的中channel句柄来查询是否有相应事件发生，如果有，说明有读写等事件发生，select()方法就会从阻塞-&gt;唤醒状态，其后相应线程进行IO处理</p>
+<p>pollArray模拟的结构为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">typedef struct pollfd &#123; </span><br><span class="line">SOCKET fd; <span class="comment">// 4 bytes </span></span><br><span class="line"><span class="keyword">short</span> events; <span class="comment">// 2 bytes </span></span><br><span class="line">&#125; pollfd_t;</span><br></pre></td></tr></table></figure>
+<p>之所以说是模拟，是因为其实现并不是真正通过该结构实现，而是使用内存地址移位实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PollArrayWrapper</span> </span>&#123; <span class="keyword">private</span> AllocatedNativeObject pollArray; <span class="comment">// The fd array -&gt;轮询数组 private static final short FD_OFFSET = 0; // fd offset in pollfd -&gt;一个句柄和其监听事件总以句柄描述符开始 private static final short EVENT_OFFSET = 4; // events offset in pollfd -&gt;socket句柄占4字节，所以事件起始位移为4 // 所发生的事件标志 static final short POLLIN = AbstractPollArrayWrapper.POLLIN; static final short POLLOUT = AbstractPollArrayWrapper.POLLOUT; static final short POLLERR = AbstractPollArrayWrapper.POLLERR; static final short POLLHUP = AbstractPollArrayWrapper.POLLHUP; static final short POLLNVAL = AbstractPollArrayWrapper.POLLNVAL; static final short POLLREMOVE = AbstractPollArrayWrapper.POLLREMOVE; static final short POLLCONN = 0x0002; .... PollArrayWrapper(int newSize) &#123; int allocationSize = newSize * SIZE_POLLFD; pollArray = new AllocatedNativeObject(allocationSize, true); pollArrayAddress = pollArray.address(); this.size = newSize; &#125; .... &#125; AllocatedNativeObject.java ---- class AllocatedNativeObject extends NativeObject &#123; .... AllocatedNativeObject(int size, boolean pageAligned) &#123; super(size, pageAligned); .... &#125; NativeObject.java ---- protected NativeObject(int size, boolean pageAligned) &#123; if (!pageAligned) &#123; this.allocationAddress = unsafe.allocateMemory(size); this.address = this.allocationAddress; &#125; else &#123; int ps = pageSize(); long a = unsafe.allocateMemory(size + ps); this.allocationAddress = a; this.address = a + ps - (a &amp; (ps - 1)); &#125; &#125;</span></span><br></pre></td></tr></table></figure>
+<p>long a = unsafe.allocateMemory(size + ps); 表明该轮询数组其实是分配的一块系统内存，并且起始地址被相应记录</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PollArrayWrapper</span> </span>&#123; .... <span class="comment">// Access methods for fd structures void putDescriptor(int i, int fd) &#123; pollArray.putInt(SIZE_POLLFD * i + FD_OFFSET, fd); &#125; void putEventOps(int i, int event) &#123; pollArray.putShort(SIZE_POLLFD * i + EVENT_OFFSET, (short)event); &#125; .... &#125;</span></span><br></pre></td></tr></table></figure>
+<p>这是对于轮询数组的核心代码，其实就是保存channel描述符以及保存其相应的事件标志，其中i表示的是当前已在轮询的channel的数量+1，fd是新加入的channel句柄，event是所监听的事件。</p>
+<p>（2） 创建自己监听自己的通道</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorImpl.java ---- WindowsSelectorImpl(SelectorProvider sp) <span class="keyword">throws</span> IOException &#123; .... wakeupPipe = Pipe.open(); wakeupSourceFd = ((SelChImpl)wakeupPipe.source()).getFDVal(); SinkChannelImpl sink = (SinkChannelImpl)wakeupPipe.sink(); (sink.sc).socket().setTcpNoDelay(<span class="keyword">true</span>); wakeupSinkFd = ((SelChImpl)sink).getFDVal(); pollWrapper.addWakeupSocket(wakeupSourceFd, <span class="number">0</span>); &#125;</span><br></pre></td></tr></table></figure>
+<p>管道是两个线程的通信方式，Pipe.open()的实现也是根据操作系统的不同而不同，linux直接使用Pipe实现，而windows则通过两个socketChannel来实现，对于管道来说，一个是sinkChannel,是数据的源通道，而sourceChannel则是数据的接收通道，对于windowsSelectorImpl来说，wakeupSinkFd就是sinkChannel的句柄，wakeupSourceFd则是sourceChannel的句柄，最后调用轮询数组对象的addWakeupSocket的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.... <span class="function"><span class="keyword">void</span> <span class="title">addWakeupSocket</span><span class="params">(<span class="keyword">int</span> fdVal, <span class="keyword">int</span> index)</span> </span>&#123; putDescriptor(index, fdVal); putEventOps(index, POLLIN); &#125; ....</span><br></pre></td></tr></table></figure>
+<p>其实就是把该接收通道的句柄放入轮询数组中，并将其监听事件设定为POLLIN，表明有可读数据到达，创建自己监听自己的通道，就是为主动唤醒selector而服务</p>
+<h3 id="Channel-register"><a href="#Channel-register" class="headerlink" title="Channel.register()"></a>Channel.register()</h3><p>（1）ServerSocketChannel ssc = ServerSocketChannel.open()打开通道</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ServerSocketChannel <span class="title">open</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">return</span> SelectorProvider.provider().openServerSocketChannel(); &#125; <span class="function"><span class="keyword">public</span> ServerSocketChannel <span class="title">openServerSocketChannel</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">return</span> <span class="keyword">new</span> ServerSocketChannelImpl(<span class="keyword">this</span>); &#125; ServerSocketChannelImpl(SelectorProvider sp) <span class="keyword">throws</span> IOException &#123; <span class="keyword">super</span>(sp); <span class="keyword">this</span>.fd = Net.serverSocket(<span class="keyword">true</span>); <span class="keyword">this</span>.fdVal = IOUtil.fdVal(fd); <span class="keyword">this</span>.state = ST_INUSE; &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看见，操作系统相关的selectorProvider无处不在，而在最后初始化通道时，Net.serverSocket(true);用来打开一个socket通道，并返回其句柄</p>
+<p>2）ssc.register(selector, SelectionKey.OP_ACCEPT)注册机制：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AbstractSelectableChannel.java ---- <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> SelectionKey <span class="title">register</span><span class="params">(Selector sel, <span class="keyword">int</span> ops, Object att)</span> <span class="keyword">throws</span> ClosedChannelException </span>&#123; <span class="keyword">if</span> (!isOpen()) <span class="keyword">throw</span> <span class="keyword">new</span> ClosedChannelException(); <span class="keyword">if</span> ((ops &amp; ~validOps()) != <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(); <span class="keyword">synchronized</span> (regLock) &#123; <span class="keyword">if</span> (blocking) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalBlockingModeException(); SelectionKey k = findKey(sel); <span class="keyword">if</span> (k != <span class="keyword">null</span>) &#123; k.interestOps(ops); k.attach(att); &#125; <span class="keyword">if</span> (k == <span class="keyword">null</span>) &#123; <span class="comment">// New registration k = ((AbstractSelector)sel).register(this, ops, att); addKey(k); &#125; return k; &#125; &#125; SelectorImpl.java ---- protected final SelectionKey register(AbstractSelectableChannel ch,int ops,Object attachment) &#123; .... synchronized (publicKeys) &#123; implRegister(k); &#125; k.interestOps(ops); .... &#125; WindowsSelectorImpl.java ---- protected void implRegister(SelectionKeyImpl ski) &#123; growIfNeeded(); channelArray[totalChannels] = ski; ski.setIndex(totalChannels); fdMap.put(ski); keys.add(ski); pollWrapper.addEntry(totalChannels, ski); totalChannels++; &#125; PollArrayWrapper.java ---- void addEntry(int index, SelectionKeyImpl ski) &#123; putDescriptor(index, ski.channel.getFDVal()); &#125;</span></span><br></pre></td></tr></table></figure>
+<p>虽然register是channel的方法，但其中调用的还是selector的register方法，在selector的register方法中，implRegister方法主要是向轮询数组中在正确的位置插入该通道的句柄，而interestOps方法则是向轮询数组中插入该通道对应的需要监听的事件，经过此，通道句柄以及相应事件已保存于轮询数组中，完成了注册功能</p>
+<p>###selector.select()<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SelectorImpl.java ---- <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">select</span><span class="params">(<span class="keyword">long</span> timeout)</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">if</span> (timeout &lt; <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Negative timeout"</span>); <span class="keyword">return</span> lockAndDoSelect((timeout == <span class="number">0</span>) ? -<span class="number">1</span> : timeout); &#125; <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">lockAndDoSelect</span><span class="params">(<span class="keyword">long</span> timeout)</span> <span class="keyword">throws</span> IOException </span>&#123; <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123; <span class="keyword">if</span> (!isOpen()) <span class="keyword">throw</span> <span class="keyword">new</span> ClosedSelectorException(); <span class="keyword">synchronized</span> (publicKeys) &#123; <span class="keyword">synchronized</span> (publicSelectedKeys) &#123; <span class="keyword">return</span> doSelect(timeout); &#125; &#125; &#125; &#125; WindowsSelectorImpl.java ---- <span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">doSelect</span><span class="params">(<span class="keyword">long</span> timeout)</span> <span class="keyword">throws</span> IOException </span>&#123; ..... subSelector.poll(); ..... &#125; <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">poll</span><span class="params">()</span> <span class="keyword">throws</span> IOException</span>&#123; <span class="comment">// poll for the main thread return poll0(pollWrapper.pollArrayAddress, Math.min(totalChannels, MAX_SELECTABLE_FDS), readFds, writeFds, exceptFds, timeout); &#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>select()最终调用的是subSelector.poll()方法，而其调用的则是本地方法poll0, 其中pollWrapper.pollArrayAddress就是轮询数组的内存地址，供本地方法使用，本地方法实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorImpl.c ---- Java_sun_nio_ch_WindowsSelectorImpl_00024SubSelector_poll0(JNIEnv *env, jobject <span class="keyword">this</span>, jlong pollAddress, jint numfds, jintArray returnReadFds, jintArray returnWriteFds, jintArray returnExceptFds, jlong timeout) &#123; <span class="comment">// 代码.... 此处省略一万字 /* Call select */ if ((result = select(0 , &amp;readfds, &amp;writefds, &amp;exceptfds, tv)) == SOCKET_ERROR) &#123; // 代码.... 此处省略一万字 for (i = 0; i &lt; numfds; i++) &#123; // 代码.... 此处省略一万字 &#125; &#125; &#125;</span></span><br></pre></td></tr></table></figure>
+<p>本地方法调用的是C的select方法，各个系统不一样，linux调用的是epoll方法，对于select方法来说，其对应于内核中的sys_select调用，sys_select首先将第二三四个参数指向的fdset拷贝到内核，然后对每个被SET的描述符调用进行poll，并记录在临时结果中（fdset），如果有事件发生，select会将临时结果写到用户空间并返回</p>
+<p>###selector.wakeup()<br>对于唤醒的实现：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorImpl.java ---- <span class="function"><span class="keyword">public</span> Selector <span class="title">wakeup</span><span class="params">()</span> </span>&#123; <span class="keyword">synchronized</span> (interruptLock) &#123; <span class="keyword">if</span> (!interruptTriggered) &#123; setWakeupSocket(); interruptTriggered = <span class="keyword">true</span>; &#125; &#125; <span class="keyword">return</span> <span class="keyword">this</span>; &#125; <span class="comment">// Sets Windows wakeup socket to a signaled state. private void setWakeupSocket() &#123; setWakeupSocket0(wakeupSinkFd); &#125; private native void setWakeupSocket0(int wakeupSinkFd);</span></span><br></pre></td></tr></table></figure></p>
+<p>唤醒使用了上面讲述过的管道sink通道句柄，其最终调用的是本地方法setWakeupSocket0,而该方法实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WindowsSelectorImpl.c ---- Java_sun_nio_ch_WindowsSelectorImpl_setWakeupSocket0(JNIEnv *env, jclass <span class="keyword">this</span>, jint scoutFd) &#123; <span class="comment">/* Write one byte into the pipe */</span> send(scoutFd, (<span class="keyword">char</span>*)&amp;POLLIN, <span class="number">1</span>, <span class="number">0</span>); &#125;</span><br></pre></td></tr></table></figure>
+<p>这里完成了向最开始建立的pipe的sink端写入了一个字节，source文件描述符就会处于就绪状态，poll方法会返回，从而导致select方法返回,达到了主动唤醒selector的目的</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/09/30/memcached-内存管理/" itemprop="url">
                   memcached 内存管理
                 </a>
@@ -977,7 +1359,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-count">10</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1031,7 +1413,7 @@
         <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2016</span>
+  <span itemprop="copyrightYear">2017</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

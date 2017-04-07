@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Java,高并发," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -86,19 +86,23 @@
 
 
 
-<meta name="description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
+<meta name="description" content="1.简介在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。
+Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：http://lmax-exchange.github">
 <meta property="og:type" content="article">
-<meta property="og:title" content="高并发下Java Random类使用">
-<meta property="og:url" content="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/index.html">
+<meta property="og:title" content="Disruptor简介">
+<meta property="og:url" content="http://yoursite.com/2017/02/28/Disruptor简介/index.html">
 <meta property="og:site_name" content="码农的耕地">
-<meta property="og:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
-<meta property="og:updated_time" content="2016-06-01T13:15:30.000Z">
+<meta property="og:description" content="1.简介在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。
+Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：http://lmax-exchange.github">
+<meta property="og:image" content="http://yoursite.com/2017/02/28/Disruptor简介/1.png">
+<meta property="og:image" content="http://yoursite.com/2017/02/28/Disruptor简介/2.png">
+<meta property="og:image" content="http://yoursite.com/2017/02/28/Disruptor简介/3.png">
+<meta property="og:updated_time" content="2017-04-05T09:26:49.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="高并发下Java Random类使用">
-<meta name="twitter:description" content="俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：1System.out.println(&quot;&quot;.split(&quot;,&quot;).length); // 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维
-而今天的主角是Random类（java.util.Random）。先声明，这是个线程">
+<meta name="twitter:title" content="Disruptor简介">
+<meta name="twitter:description" content="1.简介在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。
+Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：http://lmax-exchange.github">
+<meta name="twitter:image" content="http://yoursite.com/2017/02/28/Disruptor简介/1.png">
 
 
 
@@ -116,7 +120,7 @@
   };
 </script>
 
-  <title> 高并发下Java Random类使用 | 码农的耕地 </title>
+  <title> Disruptor简介 | 码农的耕地 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -236,7 +240,7 @@
             
             
               
-                高并发下Java Random类使用
+                Disruptor简介
               
             
           </h1>
@@ -248,8 +252,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-06-01T21:00:55+08:00" content="2016-06-01">
-              2016-06-01
+            <time itemprop="dateCreated" datetime="2017-02-28T09:57:01+08:00" content="2017-02-28">
+              2017-02-28
             </time>
           </span>
 
@@ -259,8 +263,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/06/01/高并发下Java-Random类使用/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/06/01/高并发下Java-Random类使用/" itemprop="commentsCount"></span>
+                <a href="/2017/02/28/Disruptor简介/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/02/28/Disruptor简介/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -283,25 +287,17 @@
       
 
       
-        <p>俗话说，常在河边站哪有不湿鞋，java用多了，多多少少会遇到一些坑。 例如String.split方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">""</span>.split(<span class="string">","</span>).length); <span class="comment">// 结果神奇的是1。使用commons-lang的StringUtils.split方法代替，会返回0，比较符合正常人思维</span></span><br></pre></td></tr></table></figure></p>
-<p>而今天的主角是Random类（java.util.Random）。先声明，这是个线程安全的类。<br><a id="more"></a><br>先说结论</p>
-<ul>
-<li>在高并发时，不要共用同一个Random实例</li>
-<li>在高并发时，不要使用Math.random生成随机数</li>
-<li>Java1.7开始，使用ThreadLocalRandom类代替</li>
-</ul>
-<p>用了会怎样？<br>如果你很好奇，那么我只能告诉你，并发不高时，一切都工作的很好；但并发高了，就像以多线程的方式开启了一堆死循环，会把每一个cpu都跑满！<br>在高并发时，不要共用同一个Random实例？<br>因为在高并发时效率真的是太差了，从jdk1.7开始，Random的javadoc中多了这么一句：</p>
-<blockquote>
-<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
-</blockquote>
-<p>看看源码，事实上Random.nextXXX方法都调用了Random.next方法，那么我们看看这个方法，就能找到答案：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">next</span><span class="params">(<span class="keyword">int</span> bits)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> oldseed, nextseed;</span><br><span class="line">    AtomicLong seed = <span class="keyword">this</span>.seed;</span><br><span class="line">    do &#123;</span><br><span class="line">        oldseed = seed.get();</span><br><span class="line">        nextseed = (oldseed * multiplier + addend) &amp; mask;</span><br><span class="line">    &#125; <span class="keyword">while</span> (!seed.compareAndSet(oldseed, nextseed)); <span class="comment">// 就是这里的，高并发时几乎每次比较都不相等</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">int</span>)(nextseed &gt;&gt;&gt; (<span class="number">48</span> - bits));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>java.util.Random 从Java1.0开始就存在了。它是一个线程安全类，理论上可以通过它同时在多个线程中获得互不相同的随机数。这样的线程安全是通过AtomicLong实现的。<br>Random 使用 AtomicLong CAS （compare-and-set）操作来更新它的seed，尽管很多非阻塞式算法中使用了非阻塞式原语，CAS在资源高度竞争时的表现依然糟糕。<br>在高并发时，不要使用Math.random生成随机数<br>原因是Math.random方法实际上使用了同一个Random实例！恰恰就是上面的情况。看看Math干了什么：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomNumberGeneratorHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Random randomNumberGenerator = <span class="keyword">new</span> Random(); <span class="comment">// 初始化一个共用的Random实例</span></span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">random</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> RandomNumberGeneratorHolder.randomNumberGenerator.nextDouble(); <span class="comment">// 使用共用的Random实例</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>解决方案</p>
-<blockquote>
-<p>Instances of java.util.Random are threadsafe. However, the concurrent use of the same java.util.Random instance across threads may encounter contention and consequent poor performance. Consider instead using ThreadLocalRandom in multithreaded designs.</p>
-</blockquote>
-<p>在Java1.7开始，使用ThreadLocalRandom类代替。这个类实际上使得同一个线程使用同一个Random实例，而不同的线程使用不同的Random实例。使用方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ThreadLocalRandom.current().nextXXX(); <span class="comment">/// XXX代表可选的类型，例如Int</span></span><br></pre></td></tr></table></figure></p>
-<p>如果不幸的你还在用老版本的Java（默哀…），那么使用ThreadLocal+Random实现一个类似功能的类；或者每次使用时new一个Random（这个又慢又浪费）吧。</p>
+        <h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h3><p>在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。</p>
+<p>Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：<a href="http://lmax-exchange.github.io/disruptor/" target="_blank" rel="external">http://lmax-exchange.github.io/disruptor/</a></p>
+<p>它是一个生产者消费者队列。与普通的队列不同，它通过数组实现了一个环，用于存放数据，叫做RingBuffer。框架大概如下图所示：<br><img src="/2017/02/28/Disruptor简介/1.png" alt="框架图" title="框架图"></p>
+<p>生产者(Producer)把数据塞进RingBuffer，然后消费者(Consumer)从RingBuffer中把数据读出来。</p>
+<p>RingBuffer拥有一个序号，这个序号指向数组中下一个可用的元素。随着你不停地填充这个buffer（可能也会有相应的读取），这个序号会一直增长，直到绕过这个环。通过mod操作，可以找到数组中的位置。</p>
+<h3 id="2-读写操作"><a href="#2-读写操作" class="headerlink" title="2.读写操作"></a>2.读写操作</h3><p>Disruptor具体怎么读写的，这些都可以从网上查到，我下边就简单介绍一下它的思路和为什么快的原因。</p>
+<p>多线程下其他队列之所以慢，是因为互斥锁的原因。Disruptor就解决了这个问题，Disruptor它是通过Volatile关键字实现。Disruptor的Volatile变量都不会出现同时写的操作，所以Volatile关键字就可以达到要求。</p>
+<p>Disruptor 的 RingBuffer 的指针是一个Volatile对象，消费者中的序列号也是volatile类型的。</p>
+<p>先说说写操作。</p>
+<p>写的时候，有2个指针，分别是：<br>next：第一个可以写的，移动的时候只能移动一个slot；<br>cursor：最后一个已经写了的，移动的时候只能移动一个slot。<br>写的时候，有2阶段步骤：（1）获取slot(nextEntry函数)的id，然后next指针后移；（2）写数据，然后cursor后移。<br>在下边的例子中，一开始的时候next在3，cursor在2，然后以下步骤：<br>(1)线程D先获取id = 3，next指向4；<br>(2)线程E获取id = 4，next指向5；<br>(3)线程E先写，写完后此时需要把cursor置为id 4，但是cursor只能加一，cursor是2不是3，所以就一直等待cursor变成3<br>(4)线程D写，把cursor置为id 3<br>(5)E发现cursor变成了3，然后把cursor变成4，结束。<br>如下图所示：<br><img src="/2017/02/28/Disruptor简介/2.png" alt="写操作图" title="写操作图"></p>
+<h3 id="3-读操作"><a href="#3-读操作" class="headerlink" title="3.读操作"></a>3.读操作</h3><p>下图展示当读写有冲突时的情形。该写12的时候，ProducerBarrier从所有Consumer处获取当前consumer读到的位置，发现consumer1还在读12，于是就等待，直到consumer把12读完了，Producer才可以写12。<br>写的时候，会去读取所有Consumer的当前的序号，这个值是volatile的，读不会出现错误的。（volatile在CPU写的时候会在所有读指令前边加上内存屏障，所以读到的一定是最新的）<br><img src="/2017/02/28/Disruptor简介/3.png" alt="读操作图" title="读操作图"></p>
 
       
     </div>
@@ -321,29 +317,21 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/Java/" rel="tag">#Java</a>
-          
-            <a href="/tags/高并发/" rel="tag">#高并发</a>
-          
-        </div>
-      
 
       
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/05/31/JVM优化的几个原则/" rel="next" title="JVM优化的几个原则">
-                <i class="fa fa-chevron-left"></i> JVM优化的几个原则
+              <a href="/2016/12/23/JavaNio/" rel="next" title="JavaNio">
+                <i class="fa fa-chevron-left"></i> JavaNio
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/06/02/java数据类型转换引发的血案/" rel="prev" title="java数据类型转换引发的血案">
-                java数据类型转换引发的血案 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/03/31/RPC服务化/" rel="prev" title="RPC服务化">
+                RPC服务化 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -370,8 +358,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/06/01/高并发下Java-Random类使用/"
-           data-title="高并发下Java Random类使用" data-url="http://yoursite.com/2016/06/01/高并发下Java-Random类使用/">
+      <div class="ds-thread" data-thread-key="2017/02/28/Disruptor简介/"
+           data-title="Disruptor简介" data-url="http://yoursite.com/2017/02/28/Disruptor简介/">
       </div>
     
   </div>
@@ -462,7 +450,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-简介"><span class="nav-number">1.</span> <span class="nav-text">1.简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-读写操作"><span class="nav-number">2.</span> <span class="nav-text">2.读写操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-读操作"><span class="nav-number">3.</span> <span class="nav-text">3.读操作</span></a></li></ol></div>
             
           </div>
         </section>
