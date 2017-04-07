@@ -32,22 +32,28 @@
     <link href="http://yoursite.com/2017/02/28/Disruptor%E7%AE%80%E4%BB%8B/"/>
     <id>http://yoursite.com/2017/02/28/Disruptor简介/</id>
     <published>2017-02-28T01:57:01.000Z</published>
-    <updated>2017-04-05T09:26:49.000Z</updated>
-    <content type="html"><![CDATA[<h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h3><p>在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。</p>
+    <updated>2017-04-07T03:41:52.000Z</updated>
+    <content type="html"><![CDATA[<p>Disruptor 简介<br><a id="more"></a></p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从storm0.8.0版本开始改为了 DisruptorQueue （之前是LinkedBlockingQueue）。</p>
 <p>Disruptor队列是一个什么队列呢？他是一个非常高效的框架，网上有资料介绍的，这是官方介绍：<a href="http://lmax-exchange.github.io/disruptor/" target="_blank" rel="external">http://lmax-exchange.github.io/disruptor/</a></p>
 <p>它是一个生产者消费者队列。与普通的队列不同，它通过数组实现了一个环，用于存放数据，叫做RingBuffer。框架大概如下图所示：<br><img src="/2017/02/28/Disruptor简介/1.png" alt="框架图" title="框架图"></p>
 <p>生产者(Producer)把数据塞进RingBuffer，然后消费者(Consumer)从RingBuffer中把数据读出来。</p>
 <p>RingBuffer拥有一个序号，这个序号指向数组中下一个可用的元素。随着你不停地填充这个buffer（可能也会有相应的读取），这个序号会一直增长，直到绕过这个环。通过mod操作，可以找到数组中的位置。</p>
-<h3 id="2-读写操作"><a href="#2-读写操作" class="headerlink" title="2.读写操作"></a>2.读写操作</h3><p>Disruptor具体怎么读写的，这些都可以从网上查到，我下边就简单介绍一下它的思路和为什么快的原因。</p>
+<h3 id="读写操作"><a href="#读写操作" class="headerlink" title="读写操作"></a>读写操作</h3><p>Disruptor具体怎么读写的，这些都可以从网上查到，我下边就简单介绍一下它的思路和为什么快的原因。</p>
 <p>多线程下其他队列之所以慢，是因为互斥锁的原因。Disruptor就解决了这个问题，Disruptor它是通过Volatile关键字实现。Disruptor的Volatile变量都不会出现同时写的操作，所以Volatile关键字就可以达到要求。</p>
 <p>Disruptor 的 RingBuffer 的指针是一个Volatile对象，消费者中的序列号也是volatile类型的。</p>
 <p>先说说写操作。</p>
 <p>写的时候，有2个指针，分别是：<br>next：第一个可以写的，移动的时候只能移动一个slot；<br>cursor：最后一个已经写了的，移动的时候只能移动一个slot。<br>写的时候，有2阶段步骤：（1）获取slot(nextEntry函数)的id，然后next指针后移；（2）写数据，然后cursor后移。<br>在下边的例子中，一开始的时候next在3，cursor在2，然后以下步骤：<br>(1)线程D先获取id = 3，next指向4；<br>(2)线程E获取id = 4，next指向5；<br>(3)线程E先写，写完后此时需要把cursor置为id 4，但是cursor只能加一，cursor是2不是3，所以就一直等待cursor变成3<br>(4)线程D写，把cursor置为id 3<br>(5)E发现cursor变成了3，然后把cursor变成4，结束。<br>如下图所示：<br><img src="/2017/02/28/Disruptor简介/2.png" alt="写操作图" title="写操作图"></p>
-<h3 id="3-读操作"><a href="#3-读操作" class="headerlink" title="3.读操作"></a>3.读操作</h3><p>下图展示当读写有冲突时的情形。该写12的时候，ProducerBarrier从所有Consumer处获取当前consumer读到的位置，发现consumer1还在读12，于是就等待，直到consumer把12读完了，Producer才可以写12。<br>写的时候，会去读取所有Consumer的当前的序号，这个值是volatile的，读不会出现错误的。（volatile在CPU写的时候会在所有读指令前边加上内存屏障，所以读到的一定是最新的）<br><img src="/2017/02/28/Disruptor简介/3.png" alt="读操作图" title="读操作图"></p>
+<h3 id="读操作"><a href="#读操作" class="headerlink" title="读操作"></a>读操作</h3><p>下图展示当读写有冲突时的情形。该写12的时候，ProducerBarrier从所有Consumer处获取当前consumer读到的位置，发现consumer1还在读12，于是就等待，直到consumer把12读完了，Producer才可以写12。<br>写的时候，会去读取所有Consumer的当前的序号，这个值是volatile的，读不会出现错误的。（volatile在CPU写的时候会在所有读指令前边加上内存屏障，所以读到的一定是最新的）<br><img src="/2017/02/28/Disruptor简介/3.png" alt="读操作图" title="读操作图"></p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.简介"></a>1.简介</h3><p>在Storm中，bolt发送tuple的时候会把tuple放入一个队列，然后mq从队列中取出来发送到下一个节点。这个队列，从]]>
+    <![CDATA[<p>Disruptor 简介<br>]]>
+    
     </summary>
+    
+      <category term="java" scheme="http://yoursite.com/tags/java/"/>
+    
+      <category term="disruptor" scheme="http://yoursite.com/tags/disruptor/"/>
     
   </entry>
   
